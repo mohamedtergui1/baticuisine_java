@@ -1,6 +1,6 @@
-package main.java.com.baticuisine.entities;
+package main.java.com.app.entities;
 
-import main.java.com.baticuisine.interfaces.GetId;
+import main.java.com.app.interfaces.GetId;
 
 public class Client implements GetId {
 
@@ -35,5 +35,17 @@ public class Client implements GetId {
 
     public boolean isProfessional() { return isProfessional; }
     public void setProfessional(boolean isProfessional) { this.isProfessional = isProfessional; }
+    @Override
+    public String toString() {
+        return String.format(
+                "{\"id\": %d, \"name\": \"%s\", \"address\": \"%s\", \"phoneNumber\": \"%s\", \"isProfessional\": %b}",
+                id,
+                name != null ? name : "",
+                address != null ? address : "",
+                phoneNumber != null ? phoneNumber : "",
+                isProfessional
+        );
+    }
+
 }
 

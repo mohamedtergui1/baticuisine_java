@@ -1,7 +1,6 @@
 package main.migrations;
 
-import main.java.com.baticuisine.database.PostgreSQLDatabase;
-import main.java.com.baticuisine.interfaces.GetId;
+import main.java.com.app.interfaces.GetId;
 import main.migrations.CheckExtends.CheckExtends;
 import main.migrations.FilesLoader.FilesLoader;
 

@@ -1,4 +1,4 @@
-package main.java.com.baticuisine.interfaces;
+package main.java.com.app.interfaces;
 
 import java.util.ArrayList;
 import java.util.HashMap;

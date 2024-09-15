@@ -1,4 +1,4 @@
-package main.java.com.baticuisine.database;
+package main.java.com.app.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

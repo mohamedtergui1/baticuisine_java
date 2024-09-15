@@ -1,6 +1,6 @@
-package main.java.com.baticuisine.entities;
+package main.java.com.app.entities;
 
-import main.java.com.baticuisine.interfaces.GetId;
+import main.java.com.app.interfaces.GetId;
 
 public abstract class Component implements GetId {
     private int id;

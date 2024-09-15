@@ -1,6 +1,7 @@
-package main.java.com.baticuisine.database;
+package main.migrations.orm;
 
-import main.java.com.baticuisine.interfaces.GetId;
+import main.java.com.app.database.PostgreSQLDatabase;
+import main.java.com.app.interfaces.GetId;
 import java.sql.*;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -10,7 +11,7 @@ public abstract class Orm<T> {
     private final Connection con;
 
     protected Orm() {
-        this.con = PostgreSQLDatabase.getInstance("jdbc:postgresql://localhost:5432/BatiCuisine_java", "myuser", "mypassword").getConnection();
+        this.con = PostgreSQLDatabase.getInstance("jdbc:postgresql://localhost:5432/baticuisine_java", "myuser", "mypassword").getConnection();
     }
     protected abstract Class<T> getEntityClass();
     protected Set<Class<?>> manyRelations() {
@@ -142,6 +143,7 @@ public abstract class Orm<T> {
         String sql = generateSelectQuery(tableName, columnName);
 
         ArrayList<T> results = new ArrayList<>();
+        System.out.println(sql);
 
         try (PreparedStatement pstmt = con.prepareStatement(sql)) {
             if (value != null) {
@@ -157,48 +159,59 @@ public abstract class Orm<T> {
                         String fieldName = field.getName();
                         String fieldType = field.getType().getName();
 
-                        String fieldColumnName = ALLOWED_TYPES.contains(fieldType) ? fieldName : fieldName.toLowerCase() + "_id";
+
+                        String fieldColumnName = getColumnNameForField(field);
+
 
                         Object columnValue = rs.getObject(fieldColumnName);
 
                         try {
-                            switch (fieldType) {
-                                case "java.lang.String":
-                                    field.set(entity, columnValue != null ? columnValue.toString() : null);
-                                    break;
-                                case "int":
-                                case "java.lang.Integer":
-                                    field.set(entity, columnValue != null ? ((Number) columnValue).intValue() : null);
-                                    break;
-                                case "double":
-                                case "java.lang.Double":
-                                    field.set(entity, columnValue != null ? ((Number) columnValue).doubleValue() : null);
-                                    break;
-                                case "float":
-                                case "java.lang.Float":
-                                    field.set(entity, columnValue != null ? ((Number) columnValue).floatValue() : null);
-                                    break;
-                                case "long":
-                                case "java.lang.Long":
-                                    field.set(entity, columnValue != null ? ((Number) columnValue).longValue() : null);
-                                    break;
-                                case "boolean":
-                                case "java.lang.Boolean":
-                                    field.set(entity, columnValue != null ? ((Boolean) columnValue) : null);
-                                    break;
-                                case "java.sql.Date":
-                                    field.set(entity, columnValue != null ? new java.sql.Date(((java.sql.Date) columnValue).getTime()) : null);
-                                    break;
-                                default:
-                                    if (columnValue != null) {
+                            if (field.getType().isEnum()) {
+
+                                if (columnValue != null) {
+                                    String enumName = columnValue.toString();
+                                    field.set(entity, Enum.valueOf((Class<Enum>) field.getType(), enumName));
+                                } else {
+                                    field.set(entity, null);
+                                }
+                            } else {
+
+                                switch (fieldType) {
+                                    case "java.lang.String":
+                                        field.set(entity, columnValue != null ? columnValue.toString() : null);
+                                        break;
+                                    case "int":
+                                    case "java.lang.Integer":
+                                        field.set(entity, columnValue != null ? ((Number) columnValue).intValue() : null);
+                                        break;
+                                    case "double":
+                                    case "java.lang.Double":
+                                        field.set(entity, columnValue != null ? ((Number) columnValue).doubleValue() : null);
+                                        break;
+                                    case "float":
+                                    case "java.lang.Float":
+                                        field.set(entity, columnValue != null ? ((Number) columnValue).floatValue() : null);
+                                        break;
+                                    case "long":
+                                    case "java.lang.Long":
+                                        field.set(entity, columnValue != null ? ((Number) columnValue).longValue() : null);
+                                        break;
+                                    case "boolean":
+                                    case "java.lang.Boolean":
+                                        field.set(entity, columnValue != null ? ((Boolean) columnValue) : null);
+                                        break;
+                                    case "java.sql.Date":
+                                        field.set(entity, columnValue != null ? new java.sql.Date(((java.sql.Date) columnValue).getTime()) : null);
+                                        break;
+                                    default:
                                         if (GetId.class.isAssignableFrom(field.getType())) {
                                             Object relatedEntity = getById((Integer) columnValue, field.getType().getName());
                                             field.set(entity, relatedEntity);
                                         } else {
                                             System.err.println("Unsupported field type: " + fieldType);
                                         }
-                                    }
-                                    break;
+                                        break;
+                                }
                             }
                         } catch (Exception e) {
                             System.err.println("Error setting field value: " + fieldName + " - " + e.getMessage());
@@ -213,6 +226,19 @@ public abstract class Orm<T> {
         }
 
         return results;
+    }
+
+
+    private String getColumnNameForField(Field field) {
+        // Adjust this logic based on your naming conventions
+        String fieldName = field.getName();
+        if (field.getType().isEnum()) {
+            // For enum fields, use the field name directly
+            return fieldName;
+        } else {
+            // For other fields, follow your naming convention
+            return ALLOWED_TYPES.contains(field.getType().getName()) ? fieldName : fieldName.toLowerCase() + "_id";
+        }
     }
 
     public    Object getById(Integer id, String className) {
@@ -403,10 +429,11 @@ public abstract class Orm<T> {
 
     private String generateSelectQuery(String tableName, String columnName) {
         if (columnName != null && !columnName.isEmpty()) {
-            // Generate SQL with WHERE condition
+
             return "SELECT * FROM " + tableName + " WHERE " + columnName + " = ?";
         } else {
-            // Generate SQL without WHERE condition
+
+
             return "SELECT * FROM " + tableName;
         }
     }

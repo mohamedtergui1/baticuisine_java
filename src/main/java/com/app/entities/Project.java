@@ -1,7 +1,7 @@
-package main.java.com.baticuisine.entities;
+package main.java.com.app.entities;
 
-import main.java.com.baticuisine.enums.Status;
-import main.java.com.baticuisine.interfaces.GetId;
+import main.java.com.app.enums.Status;
+import main.java.com.app.interfaces.GetId;
 
 public class Project  implements GetId {
 
@@ -40,4 +40,19 @@ public class Project  implements GetId {
 
     public Status getProjectStatus() { return projectStatus; }
     public void setProjectStatus(Status projectStatus) { this.projectStatus = projectStatus; }
+
+    public String toString() {
+        // Convert client object to JSON string if it's not null
+        String clientJson = (client != null) ? client.toString() : "null";
+
+        return String.format(
+                "{\"id\": %d, \"projectName\": \"%s\", \"profitMargin\": %.2f, \"totalCost\": %.2f, \"projectStatus\": \"%s\", \"client\": %s}",
+                id,
+                projectName != null ? projectName : "",
+                profitMargin,
+                totalCost,
+                projectStatus != null ? projectStatus.name() : "",
+                clientJson
+        );
+    }
 }

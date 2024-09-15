@@ -1,4 +1,4 @@
-package main.java.com.baticuisine.entities;
+package main.java.com.app.entities;
 
 public class Labor extends Component {
     private double hourlyRate;

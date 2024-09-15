@@ -1,11 +1,18 @@
-package main.java.com.baticuisine;
+package main.java.com.app;
 
 
+import main.java.com.app.entities.Project;
+import main.java.com.app.repository.ProjectRepositoryImpl;
+
+import java.sql.SQLException;
 import java.util.*;
 
 public class Main {
-    public static void main(String[] args)  {
-
+    public static void main(String[] args) throws SQLException {
+        List<Project> clients = new ProjectRepositoryImpl().getAll();
+        for (Project client : clients) {
+            System.out.println(client);
+        }
         System.out.println("HOTELS Reservation Management");
         Scanner scanner = new Scanner(System.in);
         int i;
