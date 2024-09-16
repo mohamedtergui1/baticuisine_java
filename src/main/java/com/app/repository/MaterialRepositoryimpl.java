@@ -30,7 +30,7 @@ public class MaterialRepositoryimpl extends Orm<Material> implements BaseReposit
 
     @Override
     public Material getById(Integer integer) {
-        return null;
+        return (Material) super.getById(integer);
     }
 
     @Override

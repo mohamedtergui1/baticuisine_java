@@ -4,7 +4,7 @@ import main.java.com.app.interfaces.GetId;
 
 import java.time.LocalDate;
 
-public class Quote  implements GetId {
+public class Estimate implements GetId {
     private int id;
     private double estimatedAmount;
     private LocalDate issueDate;

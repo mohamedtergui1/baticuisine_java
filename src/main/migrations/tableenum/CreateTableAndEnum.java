@@ -1,4 +1,4 @@
-package main.migrations.table;
+package main.migrations.tableenum;
 
 import main.java.com.app.interfaces.GetId;
 import main.migrations.checkextends.CheckExtends;
@@ -10,6 +10,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +18,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Instant;
 
-public class CreateTable {
+public class CreateTableAndEnum {
 
     private static final Map<Class<?>, String> sqlTypeMap = new HashMap<>();
 
@@ -56,6 +57,56 @@ public class CreateTable {
         }
     }
 
+    public static boolean createEnum(Class<? extends Enum<?>> clazz, Connection connection) {
+        if (!doesEnumTypeExist(clazz, connection)) {
+            String createEnumQuery = generateCreateEnumQuery(clazz);
+            try (Statement stmt = connection.createStatement()) {
+                stmt.execute(createEnumQuery);
+                System.out.println("Enum type created successfully for " + clazz.getSimpleName());
+                return true;
+            } catch (SQLException e) {
+                System.err.println("Error creating enum type for " + clazz.getSimpleName() + ": " + e.getMessage());
+                return false;
+            }
+        } else {
+            System.out.println("Enum type already exists for " + clazz.getSimpleName());
+            return false;
+        }
+    }
+
+    private static boolean doesEnumTypeExist(Class<? extends Enum<?>> clazz, Connection connection) {
+        String enumName = clazz.getSimpleName();
+        String query = "SELECT 1 FROM pg_type WHERE typname = '" + enumName + "'";
+
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+            return rs.next();
+        } catch (SQLException e) {
+            System.err.println("Error checking existence of enum type " + enumName + ": " + e.getMessage());
+            return false;
+        }
+    }
+
+    public static String generateCreateEnumQuery(Class<? extends Enum<?>> clazz) {
+        if (!clazz.isEnum()) {
+            throw new IllegalArgumentException("Class must be an enum");
+        }
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("CREATE TYPE ").append(clazz.getSimpleName()).append(" AS ENUM (");
+
+        // Append enum values
+        String enumValues = Arrays.stream(clazz.getEnumConstants())
+                .map(enumConstant -> "'" + enumConstant.toString() + "'")
+                .reduce((a, b) -> a + ", " + b)
+                .orElse("");
+
+        sql.append(enumValues);
+        sql.append(");");
+
+        return sql.toString();
+    }
+
     private static boolean doesTableExist(Class<?> clazz, Connection connection) {
         try {
             DatabaseMetaData metaData = connection.getMetaData();
@@ -83,7 +134,7 @@ public class CreateTable {
             } else if (sqlType != null) {
                 query.append(columnName).append(" ").append(sqlType);
             } else if (fieldType.isEnum()) {
-                query.append(columnName).append(" VARCHAR(255)");
+                query.append(columnName).append( " " + fieldType.getSimpleName());
             } else if (isForeignKey(field.getType().getName())) {
                 query.append(columnName).append("_id INTEGER");
                 keys.append(", CONSTRAINT fk_")
