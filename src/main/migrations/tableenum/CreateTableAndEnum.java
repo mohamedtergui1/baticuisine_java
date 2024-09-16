@@ -2,6 +2,7 @@ package main.migrations.tableenum;
 
 import main.java.com.app.interfaces.GetId;
 import main.migrations.checkextends.CheckExtends;
+import main.migrations.createrepository.CreateRepository;
 import main.migrations.filesloader.FilesLoader;
 
 import java.lang.reflect.Field;
@@ -46,6 +47,7 @@ public class CreateTableAndEnum {
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute(createTableQuery);
                 System.out.println("Table created successfully for " + clazz.getSimpleName());
+                CreateRepository.createRepository(clazz);
                 return true;
             } catch (SQLException e) {
                 System.err.println("Error creating table for " + clazz.getSimpleName() + ": " + e.getMessage());
