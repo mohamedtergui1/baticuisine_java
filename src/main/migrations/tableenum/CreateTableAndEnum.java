@@ -40,7 +40,7 @@ public class CreateTableAndEnum {
         sqlTypeMap.put(boolean.class, "BOOLEAN");
     }
 
-    // The PostgreSQL connection URL, username, and password should be passed from outside
+
     public static boolean createTable(Class<?> clazz, Connection connection) {
         if (!doesTableExist(clazz, connection)) {
             String createTableQuery = generateCreateTableQuery(clazz);

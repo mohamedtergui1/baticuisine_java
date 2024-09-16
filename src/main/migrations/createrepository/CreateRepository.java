@@ -8,7 +8,7 @@ public class CreateRepository {
     public static boolean createRepository(Class<?> clazz) {
 
         String className = clazz.getSimpleName();
-        String fileName = className + "RepositoryImpl.java";
+        String fileName = "./src/main/java/com/app/repository/" + className + "RepositoryImpl.java";
 
 
         File file = new File(fileName);
