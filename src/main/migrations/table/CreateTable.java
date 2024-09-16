@@ -1,8 +1,8 @@
-package main.migrations;
+package main.migrations.table;
 
 import main.java.com.app.interfaces.GetId;
-import main.migrations.CheckExtends.CheckExtends;
-import main.migrations.FilesLoader.FilesLoader;
+import main.migrations.checkextends.CheckExtends;
+import main.migrations.filesloader.FilesLoader;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;

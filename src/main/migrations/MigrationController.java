@@ -1,6 +1,7 @@
 package main.migrations;
 
-import main.migrations.FilesLoader.FilesLoader;
+import main.migrations.filesloader.FilesLoader;
+import main.migrations.table.CreateTable;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

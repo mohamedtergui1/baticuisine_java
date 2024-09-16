@@ -3,7 +3,7 @@ package main.java.com.app.repository;
 import main.java.com.app.entities.Client;
 import main.migrations.orm.Orm;
 
-import java.sql.SQLException;
+
 import java.util.List;
 
 public class ClientRepositoryImpl extends Orm<Client> implements BaseRepository<Client,Integer> {

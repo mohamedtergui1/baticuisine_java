@@ -1,4 +1,4 @@
-package main.migrations.FilesLoader;
+package main.migrations.filesloader;
 
 import java.io.File;
 import java.net.URL;
