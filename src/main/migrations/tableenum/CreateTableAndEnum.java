@@ -65,7 +65,6 @@ public class CreateTableAndEnum {
                 stmt.execute(createTableQuery);
                 System.out.println("Table created successfully for " + clazz.getSimpleName());
                 CreateRepository.createRepositoryInterface(clazz);
-                CreateRepository.createRepository(clazz);
                 return true;
             } catch (SQLException e) {
                 System.err.println("Error creating table for " + clazz.getSimpleName() + ": " + e.getMessage());

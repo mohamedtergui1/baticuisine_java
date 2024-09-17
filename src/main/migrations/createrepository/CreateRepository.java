@@ -68,6 +68,7 @@ public class CreateRepository {
 
                 }
                 System.out.println("File created: " + fileName);
+                createService(clazz);
                 return true;
             } else {
                 System.out.println("File already exists: " + fileName);
@@ -101,6 +102,68 @@ public class CreateRepository {
                             "import main.java.com.app.repository.BaseRepository;\n" +
                             "\n" +
                             "public interface " + className +"Repository extends BaseRepository<" + className +", Integer> {\n" +
+                            "}\n");
+
+                }
+                System.out.println("File created: " + fileName);
+                createRepository(clazz);
+                return true;
+            } else {
+                System.out.println("File already exists: " + fileName);
+                return false;
+            }
+        } catch (IOException e) {
+            System.err.println("An error occurred while creating the file: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public static boolean createService(Class<?> clazz) {
+
+        String className = clazz.getSimpleName();
+        String directoryPath = "./src/main/java/com/app/service";
+        String fileName = directoryPath + "/" + className + "Service.java";
+        File directory = new File(directoryPath);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        File file = new File(fileName);
+
+        try {
+
+            if (file.createNewFile()) {
+
+                try (FileWriter writer = new FileWriter(file)) {
+                    writer.write("package main.java.com.app.service;\n" +
+                            "\n" +
+                            "import main.java.com.app.entities."+className+";\n" +
+                            "import main.java.com.app.repository."+ className.toLowerCase() +"."+className+"Repository;\n" +
+                            "\n" +
+                            "import java.util.List;\n" +
+                            "\n" +
+                            "public class "+className+"Service {\n" +
+                            "    "+className+"Repository "+ className.toLowerCase() +"Repository;\n" +
+                            "    public "+className+"Service("+className+"Repository "+ className.toLowerCase() +"Repository) {\n" +
+                            "        this."+ className.toLowerCase() +"Repository = "+ className.toLowerCase() +"Repository;\n" +
+                            "    }\n" +
+                            "\n" +
+                            "    public "+className+" get"+className+"(int id){\n" +
+                            "        return "+ className.toLowerCase() +"Repository.getById(id);\n" +
+                            "    }\n" +
+                            "    public List<"+className+"> getAll"+className+"(){\n" +
+                            "        return "+ className.toLowerCase() +"Repository.getAll();\n" +
+                            "    }\n" +
+                            "    public boolean update"+className+"("+className+" "+ className.toLowerCase() +"){\n" +
+                            "        return "+ className.toLowerCase() +"Repository.update("+ className.toLowerCase() +");\n" +
+                            "    }\n" +
+                            "    public boolean delete"+className+"("+className+" "+ className.toLowerCase() +"){\n" +
+                            "        return "+ className.toLowerCase() +"Repository.delete("+ className.toLowerCase() +");\n" +
+                            "    }\n" +
+                            "    public boolean add"+className+"("+className+" "+ className.toLowerCase() +"){\n" +
+                            "        return "+ className.toLowerCase() +"Repository.insert("+ className.toLowerCase() +");\n" +
+                            "    }\n" +
+                            "\n" +
                             "}\n");
 
                 }

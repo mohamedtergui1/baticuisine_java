@@ -1,7 +1,9 @@
 package main.java.com.app;
 
 
+import main.java.com.app.entities.Client;
 import main.java.com.app.entities.Project;
+import main.migrations.validation.Validator;
 
 
 import java.sql.SQLException;
@@ -9,7 +11,20 @@ import java.util.*;
 
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) throws SQLException, IllegalAccessException {
+
+        Client client = new Client();
+        client.setId(1);
+        client.setName("a");
+        List<String> errors =  Validator.validate(client);
+        if (errors.isEmpty()) {
+            System.out.println("All fields are valid.");
+        } else {
+            for (String error : errors) {
+                System.out.println(error);
+            }
+        }
+
 //        List<Project> projects = new ProjectRepositoryImpl().getAll();
 //        for (Project project : projects) {
 //            System.out.println(project);
