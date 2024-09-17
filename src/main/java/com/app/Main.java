@@ -2,7 +2,7 @@ package main.java.com.app;
 
 
 import main.java.com.app.entities.Project;
-import main.java.com.app.repository.ProjectRepositoryImpl;
+
 
 import java.sql.SQLException;
 import java.util.*;
@@ -10,10 +10,10 @@ import java.util.*;
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) throws SQLException {
-        List<Project> projects = new ProjectRepositoryImpl().getAll();
-        for (Project project : projects) {
-            System.out.println(project);
-        }
+//        List<Project> projects = new ProjectRepositoryImpl().getAll();
+//        for (Project project : projects) {
+//            System.out.println(project);
+//        }
         while (true) {
             showMainMenu();
             int choice = getUserChoice();

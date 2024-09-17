@@ -40,6 +40,23 @@ public class CreateTableAndEnum {
         sqlTypeMap.put(boolean.class, "BOOLEAN");
     }
 
+    public static boolean dropTable(Class<?> clazz, Connection connection) {
+        // Determine the table name based on the class name
+        String tableName = clazz.getSimpleName();
+
+        // SQL statement to drop the table
+        String dropTableQuery = "DROP TABLE IF EXISTS " + tableName + ";";
+
+        // Execute the drop table query
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute(dropTableQuery);
+            System.out.println("Table " + tableName + " dropped successfully.");
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Error dropping table " + tableName + ": " + e.getMessage());
+            return false;
+        }
+    }
 
     public static boolean createTable(Class<?> clazz, Connection connection) {
         if (!doesTableExist(clazz, connection)) {
@@ -47,6 +64,7 @@ public class CreateTableAndEnum {
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute(createTableQuery);
                 System.out.println("Table created successfully for " + clazz.getSimpleName());
+                CreateRepository.createRepositoryInterface(clazz);
                 CreateRepository.createRepository(clazz);
                 return true;
             } catch (SQLException e) {

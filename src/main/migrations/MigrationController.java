@@ -6,6 +6,10 @@ import main.migrations.tableenum.CreateTableAndEnum;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 public class MigrationController {
     public static void main(String[] args) {
@@ -15,6 +19,15 @@ public class MigrationController {
 
 
         try (Connection connection = (Connection) DriverManager.getConnection(url, user, password)) {
+            Set<Class<?>> entities =  FilesLoader.getEntities();
+            List<Class<?>> entityList = new ArrayList<>(entities);
+
+            Collections.reverse(entityList);
+            for (Class<?> clazz : entityList ){
+                CreateTableAndEnum.dropTable(clazz,connection);
+            }
+
+
             for (Class<?> clazz : FilesLoader.getEnums()) {
                 if( clazz.isEnum())
                 {
@@ -26,7 +39,7 @@ public class MigrationController {
                     System.out.println(clazz.getName() + " is not enum");
 
             }
-            for (Class<?> clazz : FilesLoader.getEntities()) {
+            for (Class<?> clazz : entities) {
                 System.out.println(CreateTableAndEnum.generateCreateTableQuery(clazz));
 
                 boolean success = CreateTableAndEnum.createTable(clazz, connection);
