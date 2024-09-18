@@ -10,9 +10,7 @@ import java.util.*;
 public abstract class Orm<T> {
     private final Connection con;
 
-    protected Orm() {
-        this.con = PostgreSQLDatabase.getInstance("jdbc:postgresql://localhost:5432/baticuisine_java", "myuser", "mypassword").getConnection();
-    }
+    protected Orm() {this.con = PostgreSQLDatabase.getInstance("jdbc:postgresql://localhost:5432/baticuisine_java", "myuser", "mypassword").getConnection();}
     protected abstract Class<T> getEntityClass();
     protected Set<Class<?>> manyRelations() {
         return new HashSet<>();
