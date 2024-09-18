@@ -18,7 +18,7 @@ public class MigrationController {
         String password = "mypassword";
 
 
-        try (Connection connection = (Connection) DriverManager.getConnection(url, user, password)) {
+        try (Connection connection = DriverManager.getConnection(url, user, password)) {
             Set<Class<?>> entities =  FilesLoader.getEntities();
             List<Class<?>> entityList = new ArrayList<>(entities);
 

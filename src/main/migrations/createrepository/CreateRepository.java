@@ -25,7 +25,6 @@ public class CreateRepository {
                 try (FileWriter writer = new FileWriter(file)) {
                     writer.write("package main.java.com.app.repository."+className.toLowerCase()+";\n" +
                             "\n" +
-
                             "import main.java.com.app.entities." + className + ";\n" +
                             "import main.migrations.orm.Orm;\n" +
                             "\n" +
@@ -135,15 +134,15 @@ public class CreateRepository {
             if (file.createNewFile()) {
 
                 try (FileWriter writer = new FileWriter(file)) {
-                    writer.write("package main.java.com.app.service;\n" +
+                    writer.write("package main.java.com.app.service;\nimport main.migrations.annotation.InjectClass;\n" +
                             "\n" +
                             "import main.java.com.app.entities."+className+";\n" +
                             "import main.java.com.app.repository."+ className.toLowerCase() +"."+className+"Repository;\n" +
-                            "\n" +
+                            "\nimport main.java.com.app.repository."+className.toLowerCase()+"."+className+"RepositoryImpl;\n" +
                             "import java.util.List;\n" +
                             "\n" +
                             "public class "+className+"Service {\n" +
-                            "    "+className+"Repository "+ className.toLowerCase() +"Repository;\n" +
+                            "    "+className+"Repository "+ className.toLowerCase() +"Repository;\n    @InjectClass(" + className + "RepositoryImpl.class)\n" +
                             "    public "+className+"Service("+className+"Repository "+ className.toLowerCase() +"Repository) {\n" +
                             "        this."+ className.toLowerCase() +"Repository = "+ className.toLowerCase() +"Repository;\n" +
                             "    }\n" +

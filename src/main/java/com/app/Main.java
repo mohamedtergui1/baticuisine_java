@@ -4,7 +4,10 @@ package main.java.com.app;
 import main.java.com.app.entities.Client;
 import main.java.com.app.entities.Project;
 import main.java.com.app.repository.client.ClientRepositoryImpl;
+import main.java.com.app.repository.project.ProjectRepositoryImpl;
 import main.java.com.app.service.ClientService;
+import main.java.com.app.service.ProjectService;
+import main.migrations.injector.DependencyInjector;
 import main.migrations.validation.Validator;
 
 
@@ -15,17 +18,12 @@ public class Main {
     private static final Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) throws SQLException, IllegalAccessException {
 
-        List<Client> clients = new ClientService(new ClientRepositoryImpl()).getAllClient();
+        List<Client> clients = DependencyInjector.createInstance(ClientService.class).getAllClient();
 
         for (Client client : clients) {
             System.out.println(client);
         }
 
-
-//        List<Project> projects = new ProjectRepositoryImpl().getAll();
-//        for (Project project : projects) {
-//            System.out.println(project);
-//        }
         while (true) {
             showMainMenu();
             int choice = getUserChoice();

@@ -1,6 +1,6 @@
 package main.migrations.orm;
 
-import main.java.com.app.database.PostgreSQLDatabase;
+import main.migrations.database.PostgreSQLDatabase;
 import main.java.com.app.interfaces.GetId;
 import java.sql.*;
 import java.lang.reflect.Field;
