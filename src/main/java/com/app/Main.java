@@ -15,7 +15,7 @@ public class Main {
 
         Client client = new Client();
         client.setId(1);
-        client.setName("a");
+        client.setName("adziaojdpzij");
         List<String> errors =  Validator.validate(client);
         if (errors.isEmpty()) {
             System.out.println("All fields are valid.");

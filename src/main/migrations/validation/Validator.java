@@ -16,7 +16,6 @@ public class Validator {
             field.setAccessible(true);
             Object value = field.get(obj);
 
-
             StringValidation validation = field.getAnnotation(StringValidation.class);
             if (validation != null) {
                 if (value == null) {
