@@ -2,20 +2,213 @@ package main.migrations.orm;
 
 import main.migrations.database.PostgreSQLDatabase;
 import main.java.com.app.interfaces.GetId;
+
+import java.lang.reflect.Type;
 import java.sql.*;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public abstract class Orm<T> {
     private final Connection con;
-
+    private final StringBuilder query = new StringBuilder();
+    private final Map<String,String> typeValue = new  HashMap<>();
     protected Orm() {this.con = PostgreSQLDatabase.getInstance("jdbc:postgresql://localhost:5432/baticuisine_java", "myuser", "mypassword").getConnection();}
+    private static final Set<String> ALLOWED_TYPES = new HashSet<>(Arrays.asList("int","boolean" , "float", "java.lang.String", "char", "long", "double", "java.sql.Date"));
+
     protected abstract Class<T> getEntityClass();
     protected Set<Class<?>> manyRelations() {
         return new HashSet<>();
     }
-    private static final Set<String> ALLOWED_TYPES = new HashSet<>(Arrays.asList("int","boolean" , "float", "java.lang.String", "char", "long", "double", "java.sql.Date"));
+
+
+
+
+
+
+
+
+
+
+    public StringBuilder select(Class<?> clazz) {
+        query.setLength(0); // Clear previous queries
+        return query.append("SELECT * FROM ").append(clazz.getSimpleName());
+    }
+
+    public StringBuilder select() {
+        return select(getEntityClass());
+    }
+
+    public StringBuilder whereLike(String column, String value) {
+
+        String formattedValue = "%" + value + "%";
+        typeValue.put("java.lang.String", formattedValue); // Use the formatted value with wildcards
+        return query.append(" WHERE ").append(column).append(" LIKE ?");
+    }
+
+
+    public List<T> fetchAll() {
+        return fetchAll(getEntityClass()); // Calls the overloaded method with the class determined by getEntityClass()
+    }
+
+    public List<T> fetchAll(Class<T> clazz) {
+        List<T> results = new ArrayList<>();
+        System.out.println(query.toString());
+
+        try (PreparedStatement pstmt = con.prepareStatement(this.query.toString())) {
+            AtomicInteger index = new AtomicInteger(1);
+
+            // Set parameters in the PreparedStatement
+            for (Map.Entry<String, String> entry : this.typeValue.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+
+                if (ALLOWED_TYPES.contains(key)) {
+                    try {
+                        switch (key) {
+                            case "int":
+                                pstmt.setInt(index.getAndIncrement(), Integer.parseInt(value));
+                                break;
+                            case "boolean":
+                                pstmt.setBoolean(index.getAndIncrement(), Boolean.parseBoolean(value));
+                                break;
+                            case "float":
+                                pstmt.setFloat(index.getAndIncrement(), Float.parseFloat(value));
+                                break;
+                            case "java.lang.String":
+                                pstmt.setString(index.getAndIncrement(), value);
+                                break;
+                            case "char":
+                                pstmt.setString(index.getAndIncrement(), String.valueOf(value.charAt(0)));
+                                break;
+                            case "long":
+                                pstmt.setLong(index.getAndIncrement(), Long.parseLong(value));
+                                break;
+                            case "double":
+                                pstmt.setDouble(index.getAndIncrement(), Double.parseDouble(value));
+                                break;
+                            case "java.sql.Date":
+                                pstmt.setDate(index.getAndIncrement(), java.sql.Date.valueOf(value));
+                                break;
+                            default:
+                                throw new IllegalArgumentException("Unsupported type: " + key);
+                        }
+                    } catch (SQLException e) {
+                        System.err.println("Error setting parameter: " + e.getMessage());
+                    } catch (NumberFormatException e) {
+                        System.err.println("Error parsing value for type " + key + ": " + e.getMessage());
+                    }
+                } else {
+                    throw new IllegalArgumentException("Unsupported type: " + key);
+                }
+            }
+
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    T instance = mapRow(rs);
+                    results.add(instance);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("SQL error occurred: " + e.getMessage(), e);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+
+        return results;
+    }
+
+    public T fetch() {
+        return fetch(getEntityClass()); // Calls the overloaded method with the class determined by getEntityClass()
+    }
+
+    public T fetch(Class<T> clazz) {
+        T result = null;
+        System.out.println(query.toString());
+
+        try (PreparedStatement pstmt = con.prepareStatement(this.query.toString())) {
+            AtomicInteger index = new AtomicInteger(1);
+
+            // Set parameters in the PreparedStatement
+            for (Map.Entry<String, String> entry : this.typeValue.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+
+                if (ALLOWED_TYPES.contains(key)) {
+                    try {
+                        switch (key) {
+                            case "int":
+                                pstmt.setInt(index.getAndIncrement(), Integer.parseInt(value));
+                                break;
+                            case "boolean":
+                                pstmt.setBoolean(index.getAndIncrement(), Boolean.parseBoolean(value));
+                                break;
+                            case "float":
+                                pstmt.setFloat(index.getAndIncrement(), Float.parseFloat(value));
+                                break;
+                            case "java.lang.String":
+                                pstmt.setString(index.getAndIncrement(), value);
+                                break;
+                            case "char":
+                                pstmt.setString(index.getAndIncrement(), String.valueOf(value.charAt(0)));
+                                break;
+                            case "long":
+                                pstmt.setLong(index.getAndIncrement(), Long.parseLong(value));
+                                break;
+                            case "double":
+                                pstmt.setDouble(index.getAndIncrement(), Double.parseDouble(value));
+                                break;
+                            case "java.sql.Date":
+                                pstmt.setDate(index.getAndIncrement(), java.sql.Date.valueOf(value));
+                                break;
+                            default:
+                                throw new IllegalArgumentException("Unsupported type: " + key);
+                        }
+                    } catch (SQLException e) {
+                        System.err.println("Error setting parameter: " + e.getMessage());
+                    } catch (NumberFormatException e) {
+                        System.err.println("Error parsing value for type " + key + ": " + e.getMessage());
+                    }
+                } else {
+                    throw new IllegalArgumentException("Unsupported type: " + key);
+                }
+            }
+
+            // Execute the query and process the results
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    result = mapRow(rs, clazz); // Use a method to convert ResultSet to T
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("SQL error occurred: " + e.getMessage(), e);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+
+        return result; // Return the fetched entity or null if not found
+    }
+
+
+    private T mapRow(ResultSet rs) throws SQLException {
+        try {
+            T instance = getEntityClass().getDeclaredConstructor().newInstance();
+            // Assuming T has appropriate setters or public fields, use reflection to set fields
+            for (Field field : getEntityClass().getDeclaredFields()) {
+                field.setAccessible(true); // Allow access to private fields
+                Object value = rs.getObject(field.getName()); // Get value from ResultSet
+                field.set(instance, value); // Set value to the instance
+            }
+            return instance;
+        } catch (ReflectiveOperationException e) {
+            throw new SQLException("Error creating instance of " + getEntityClass().getName(), e);
+        }
+    }
+
+
+
 
     public boolean insert(T obj) {
         if (obj == null) {
@@ -522,4 +715,12 @@ public abstract class Orm<T> {
 
         return sql.toString();
     }
+
+
+
+
+
+
+
+
 }
