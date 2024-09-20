@@ -1,4 +1,4 @@
-package main.migrations.checkextends;
+package main.myframework.checkextends;
 
 
 import java.lang.reflect.Constructor;

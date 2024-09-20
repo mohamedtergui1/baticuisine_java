@@ -1,7 +1,7 @@
 package main.java.com.app.entities;
 
 import main.java.com.app.interfaces.GetId;
-import main.migrations.annotation.StringValidation;
+import main.myframework.annotation.StringValidation;
 
 public class Client implements GetId {
 

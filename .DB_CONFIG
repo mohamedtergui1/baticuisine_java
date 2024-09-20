@@ -1,0 +1,6 @@
+// this a comment and you need to put your config db here and you need to check the driver for postgres db
+host = localhost
+port = 5432
+db_name = baticuisine_java
+username = myuser
+password = mypassword

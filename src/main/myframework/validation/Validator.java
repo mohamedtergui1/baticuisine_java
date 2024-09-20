@@ -1,6 +1,6 @@
-package main.migrations.validation;
+package main.myframework.validation;
 
-import main.migrations.annotation.StringValidation;
+import main.myframework.annotation.StringValidation;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;

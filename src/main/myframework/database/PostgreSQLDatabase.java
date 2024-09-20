@@ -1,8 +1,9 @@
-package main.migrations.database;
+package main.myframework.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Map;
 
 public class PostgreSQLDatabase {
     private static PostgreSQLDatabase instance;
@@ -10,19 +11,21 @@ public class PostgreSQLDatabase {
     private final String url;
     private final String user;
     private final String password;
+    static String FILE_CONFIG_NAME  = "./.DB_CONFIG" ;
+    private Map<String,String> config ;
 
-
-    private PostgreSQLDatabase(String url, String user, String password) {
-        this.url = url;
-        this.user = user;
-        this.password = password;
+    private PostgreSQLDatabase() {
+        config = ConfigReader.readConfigFile();
+        this.url = "jdbc:postgresql://"+config.get("host") + ":" + config.get("port")+ "/" + config.get("db_name");
+        this.user = config.get("username");
+        this.password = config.get("password");
         connect();
     }
 
 
-    public static synchronized PostgreSQLDatabase getInstance(String url, String user, String password) {
+    public static synchronized PostgreSQLDatabase getInstance() {
         if (instance == null) {
-            instance = new PostgreSQLDatabase(url, user, password);
+            instance = new PostgreSQLDatabase();
         }
         return instance;
     }

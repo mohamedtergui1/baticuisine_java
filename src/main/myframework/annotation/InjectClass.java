@@ -1,4 +1,4 @@
-package main.migrations.annotation;
+package main.myframework.annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

@@ -1,9 +1,9 @@
-package main.migrations.tableenum;
+package main.myframework.tableenum;
 
 import main.java.com.app.interfaces.GetId;
-import main.migrations.checkextends.CheckExtends;
-import main.migrations.createrepository.CreateRepository;
-import main.migrations.filesloader.FilesLoader;
+import main.myframework.checkextends.CheckExtends;
+import main.myframework.createrepository.CreateRepository;
+import main.myframework.filesloader.FilesLoader;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;

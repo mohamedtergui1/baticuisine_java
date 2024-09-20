@@ -1,14 +1,14 @@
 package main.java.com.app;
 
 
+
 import main.java.com.app.entities.Client;
 import main.java.com.app.entities.Project;
+
 import main.java.com.app.repository.client.ClientRepositoryImpl;
-import main.java.com.app.repository.project.ProjectRepositoryImpl;
 import main.java.com.app.service.ClientService;
 import main.java.com.app.service.ProjectService;
-import main.migrations.injector.DependencyInjector;
-import main.migrations.validation.Validator;
+import main.myframework.injector.DependencyInjector;
 
 
 import java.sql.SQLException;
@@ -18,12 +18,10 @@ public class Main {
     private static final Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) throws SQLException, IllegalAccessException {
 
-        List<Client> clients = DependencyInjector.createInstance(ClientService.class).getAllClient();
-
+        List<Client> clients = new ClientRepositoryImpl().searchByName("a");
         for (Client client : clients) {
             System.out.println(client);
         }
-
         while (true) {
             showMainMenu();
             int choice = getUserChoice();
@@ -68,43 +66,80 @@ public class Main {
     }
 
     private static void createNewProject() {
+        System.out.println("Souhaitez-vous chercher un client existant ou en ajouter un nouveau ?");
+        System.out.println("1. Chercher un client existant\n" +
+                "2. Ajouter un nouveau client");
+        Client client = new Client();
+
+            int choice = getUserChoice();
+            scanner.nextLine();
+            switch (choice)
+            {
+                case 1:
+                     searchClient(client);
+                     break;
+                case 2:
+            }
+
+
+        createNewProject(client);
+
+
+    }
+
+    private static void searchClient(Client client) {
+        System.out.println("chercher un client");
+            System.out.print("entrez le nom de client:");
+            String line = scanner.nextLine();
+            List<Client> clients = DependencyInjector.createInstance(ClientService.class).SearchByName(line);
+            for (Client c : clients) {
+                System.out.println(c);
+            }
+
+            int choice = getUserChoice();
+                scanner.nextLine();
+                if(scanner.hasNextInt()) {
+                    choice = scanner.nextInt();
+                    scanner.nextLine();
+                    System.out.println(choice);
+                    client  = DependencyInjector.createInstance(ClientService.class).getClient(choice);
+                    System.out.println(client);
+                }
+
+    }
+
+    private static void createNewProject(Client client) {
+        Project project = new Project();
+        project.setClient(client);
         System.out.println("--- Création d'un Nouveau Projet ---");
-        scanner.nextLine(); // Consume newline
+
+
 
         System.out.print("Entrez le nom du projet : ");
         String projectName = scanner.nextLine();
-
+        project.setProjectName(projectName);
         System.out.print("Entrez la surface de la cuisine (en m²) : ");
         double surface = scanner.nextDouble();
+        project.setProfitMargin(surface);
 
-        // Call methods to handle materials and labor, calculate costs, etc.
-
+        System.out.println(project);
         System.out.println("Projet créé avec succès !");
     }
 
     private static void displayExistingProjects() {
         System.out.println("--- Affichage des projets existants ---");
-
-        // Retrieve and display existing projects from the database or data source.
-
         System.out.println("Liste des projets : ");
-        // Example placeholder
-        System.out.println("1. Projet A - Client A - Coût Total: 5000 €");
-        System.out.println("2. Projet B - Client B - Coût Total: 7500 €");
+        List<Project> projects  = DependencyInjector.createInstance(ProjectService.class).getAllProject();
+        for (Project project : projects) {
+            System.out.println(project);
+        }
     }
 
     private static void calculateProjectCost() {
         System.out.println("--- Calcul du coût d'un projet ---");
-
-        // Allow user to select a project and calculate costs.
-
         System.out.print("Sélectionnez un projet parmi la liste des projets existants : ");
         int projectId = getUserChoice();
-
-        // Retrieve the selected project and perform cost calculations.
-
         System.out.println("Calcul du coût en cours...");
-        // Example placeholder result
         System.out.println("Coût total calculé : 6000 €");
     }
 }

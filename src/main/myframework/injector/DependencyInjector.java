@@ -1,6 +1,6 @@
-package main.migrations.injector;
+package main.myframework.injector;
 
-import main.migrations.annotation.InjectClass;
+import main.myframework.annotation.InjectClass;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

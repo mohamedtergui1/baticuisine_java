@@ -1,4 +1,4 @@
-package main.migrations.createrepository;
+package main.myframework.createrepository;
 
 import java.io.File;
 import java.io.FileWriter;
