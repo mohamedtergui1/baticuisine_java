@@ -1,7 +1,8 @@
-// this a comment and you need to put your config db here and you need to check the driver for postgres db 
+// this a comment and you need to put your config db here and you need to check the driver for postgres db
 // make sur to rename file with .DB_CONFIG or create a new one
-host = localhost
-port = 5432
-db_name = baticuisine_java
-username = myuser
-password = mypassword
+// dont make the values on "" !!
+host =
+port =
+db_name =
+username =
+password =
