@@ -1,7 +1,7 @@
 package main.java.com.app.entities;
 
 import main.java.com.app.enums.Status;
-import main.java.com.app.interfaces.GetId;
+import main.myframework.interfaces.GetId;
 
 public class Project  implements GetId {
 

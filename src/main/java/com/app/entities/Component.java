@@ -1,6 +1,6 @@
 package main.java.com.app.entities;
 
-import main.java.com.app.interfaces.GetId;
+import main.myframework.interfaces.GetId;
 
 public abstract class Component implements GetId {
     private int id;

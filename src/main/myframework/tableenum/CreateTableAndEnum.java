@@ -1,8 +1,8 @@
 package main.myframework.tableenum;
 
-import main.java.com.app.interfaces.GetId;
+import main.myframework.interfaces.GetId;
 import main.myframework.checkextends.CheckExtends;
-import main.myframework.createrepository.CreateRepository;
+import main.myframework.createrepositoryandservice.CreateRepositoryAndService;
 import main.myframework.filesloader.FilesLoader;
 
 import java.lang.reflect.Field;
@@ -64,7 +64,7 @@ public class CreateTableAndEnum {
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute(createTableQuery);
                 System.out.println("Table created successfully for " + clazz.getSimpleName());
-                CreateRepository.createRepositoryInterface(clazz);
+                CreateRepositoryAndService.createRepositoryInterface(clazz);
                 return true;
             } catch (SQLException e) {
                 System.err.println("Error creating table for " + clazz.getSimpleName() + ": " + e.getMessage());

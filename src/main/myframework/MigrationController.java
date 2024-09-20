@@ -11,7 +11,7 @@ import java.util.*;
 
 public class MigrationController {
     public static void main(String[] args) {
-
+        System.out.println("Hello World!");
         try (Connection connection = PostgreSQLDatabase.getInstance().getConnection()) {
             Set<Class<?>> entities =  FilesLoader.getEntities();
             List<Class<?>> entityList = new ArrayList<>(entities);

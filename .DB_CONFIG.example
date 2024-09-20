@@ -1,6 +1,7 @@
 // this a comment and you need to put your config db here and you need to check the driver for postgres db
 // make sur to rename file with .DB_CONFIG or create a new one
 // dont make the values on "" !!
+// check you add to your project the postgres driver
 host =
 port =
 db_name =

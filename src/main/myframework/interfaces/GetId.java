@@ -1,4 +1,4 @@
-package main.java.com.app.interfaces;
+package main.myframework.interfaces;
 
 public interface GetId {
    int getId();

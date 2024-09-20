@@ -1,10 +1,10 @@
-package main.myframework.createrepository;
+package main.myframework.createrepositoryandservice;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class CreateRepository {
+public class CreateRepositoryAndService {
     public static boolean createRepository(Class<?> clazz) {
 
         String className = clazz.getSimpleName();

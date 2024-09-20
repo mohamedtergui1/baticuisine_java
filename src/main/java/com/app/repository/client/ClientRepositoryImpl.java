@@ -42,5 +42,5 @@ public class ClientRepositoryImpl extends Orm<Client> implements ClientRepositor
     public List<Client> searchByName(String name) {
         return super.buildQuery().select().whereLike("name",name).fetchAll();
     }
-
+    
 }
