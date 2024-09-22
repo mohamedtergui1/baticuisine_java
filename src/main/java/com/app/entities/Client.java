@@ -21,7 +21,6 @@ public class Client implements GetId {
     @StringMaxLength(maxLength = 13)
     @StringMinLength(9)
     private String phoneNumber;
-    @Nullable()
     @DefaultValueBoolean(false)
     private boolean isProfessional;
 

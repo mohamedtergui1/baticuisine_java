@@ -24,15 +24,6 @@ public class Main {
     private static final Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) {
 
-            List<Project>  materials = DependencyInjector.createInstance(ProjectService.class).getAllProject();
-            for (Project material : materials) {
-                System.out.println(material);
-            }
-        List<Field> Fields = ReflectionUtil.getAllDeclaredFields(Labor.class);
-        for (Field field : Fields) {
-            System.out.println(field.getName());
-        }
-
         while (true) {
             showMainMenu();
             int choice = getUserChoice();
@@ -116,13 +107,13 @@ public class Main {
                     client  = DependencyInjector.createInstance(ClientService.class).getClient(choice);
                     System.out.println(client);
                 }
-
     }
 
     private static void createNewProject(Client client) {
         Project project = new Project();
+        System.out.println("client qui vous avez selection");
         project.setClient(client);
-        System.out.println("--- Création d'un Nouveau Projet ---");
+
 
 
 
@@ -132,9 +123,11 @@ public class Main {
         System.out.print("Entrez la surface de la cuisine (en m²) : ");
         double surface = scanner.nextDouble();
         project.setProfitMargin(surface);
+        if(DependencyInjector.createInstance(ProjectService.class).addProject(project)) {
+            System.out.println("Projet créé avec succès !");
 
-        System.out.println(project);
-        System.out.println("Projet créé avec succès !");
+        }
+        else System.out.println("Project ne create pas");
     }
 
     private static void displayExistingProjects() {

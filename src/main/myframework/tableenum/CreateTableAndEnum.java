@@ -48,6 +48,98 @@ public class CreateTableAndEnum {
         sqlTypeMap.put(Instant.class, "TIMESTAMPTZ");
         sqlTypeMap.put(boolean.class, "BOOLEAN");
     }
+    public static String generateCreateTableQuery(Class<?> clazz) {
+        StringBuilder query = new StringBuilder("CREATE TABLE ");
+        query.append(clazz.getSimpleName().toLowerCase()).append(" (");
+        StringBuilder keys = new StringBuilder();
+        Field[] fields = clazz.getDeclaredFields();
+
+        for (int i = 0; i < fields.length; i++) {
+            Field field = fields[i];
+            String columnName = field.getName().toLowerCase();
+            Class<?> fieldType = field.getType();
+            String sqlType = sqlTypeMap.get(fieldType);
+            int max = 255;
+            StringMaxLength maxLength = field.getAnnotation(StringMaxLength.class);
+            if (maxLength != null) {
+                max = maxLength.maxLength();
+            }
+            // Handle primary key
+            if (field.getName().equals("id")) {
+                query.append("id SERIAL PRIMARY KEY");
+            }else
+            if(fieldType == String.class){
+                sqlType = "VARCHAR("+max+")";
+
+                query.append(columnName).append(" ").append(sqlType);
+                DefaultValueString defaultValueStringAnnotation = field.getAnnotation(DefaultValueString.class);
+                if (defaultValueStringAnnotation != null) {
+                    query.append(" DEFAULT '").append(defaultValueStringAnnotation.value()).append("'");
+                }
+            }
+            else if (sqlType != null) {
+                query.append(columnName).append(" ").append(sqlType);
+
+                DefaultValueString defaultValueStringAnnotation = field.getAnnotation(DefaultValueString.class);
+                if (defaultValueStringAnnotation != null) {
+                    query.append(" DEFAULT '").append(defaultValueStringAnnotation.value()).append("'");
+                }
+                DefaultValueBoolean defaultValueBooleanAnnotation = field.getAnnotation(DefaultValueBoolean.class);
+                if (defaultValueBooleanAnnotation != null) {
+                    query.append(" DEFAULT ").append(defaultValueBooleanAnnotation.value());
+                }
+
+            }
+            // Handle enums
+            else if (fieldType.isEnum()) {
+
+                query.append(columnName).append(" VARCHAR(" + max + ")"); // Adjust as needed
+            }
+            // Handle foreign keys
+            else if (isForeignKey(field.getType().getName())) {
+                CascadeType cascade = CascadeType.NO_ACTION;
+                String action =  "NO ACTION";
+                CompositionType compositionType = field.getAnnotation(CompositionType.class);
+                if(compositionType != null) {
+                    cascade = compositionType.cascade();
+                    action = cascade.toString().replace('_',' ');
+                }
+                query.append(columnName).append("_id INTEGER");
+                keys.append(", CONSTRAINT fk_")
+                        .append(clazz.getSimpleName().toLowerCase())
+                        .append("_")
+                        .append(columnName)
+                        .append(" FOREIGN KEY (")
+                        .append(columnName).append("_id")
+                        .append(") REFERENCES public.")
+                        .append(field.getType().getSimpleName().toLowerCase()).append(" (id) ")
+                        .append("ON DELETE ").append(action).append(" ");
+            } else {
+                System.err.println("Unknown type for field " + columnName);
+                continue;
+            }
+
+            if (i < fields.length - 1) {
+                query.append(", ");
+            }
+        }
+
+        query.append(keys.toString());
+
+        // Handle inheritance
+        Class<?> parentClass = CheckExtends.check(FilesLoader.getEntities(), clazz);
+        if (parentClass != null) {
+            query.append(") INHERITS (").append(parentClass.getSimpleName().toLowerCase()).append(")");
+        } else {
+            query.append(")");
+        }
+
+        query.append(";");
+
+        return query.toString();
+    }
+
+
 
     public static boolean dropTable(Class<?> clazz, Connection connection) {
         // Determine the table name based on the class name
@@ -146,96 +238,7 @@ public class CreateTableAndEnum {
         }
     }
 
-    public static String generateCreateTableQuery(Class<?> clazz) {
-        StringBuilder query = new StringBuilder("CREATE TABLE ");
-        query.append(clazz.getSimpleName().toLowerCase()).append(" (");
-        StringBuilder keys = new StringBuilder();
-        Field[] fields = clazz.getDeclaredFields();
 
-        for (int i = 0; i < fields.length; i++) {
-            Field field = fields[i];
-            String columnName = field.getName().toLowerCase();
-            Class<?> fieldType = field.getType();
-            String sqlType = sqlTypeMap.get(fieldType);
-
-            // Check for StringMaxLength annotation
-            StringMaxLength stringMaxLengthAnnotation = field.getAnnotation(StringMaxLength.class);
-            String maxLengthConstraint = "";
-            if (stringMaxLengthAnnotation != null) {
-                maxLengthConstraint = " VARCHAR(" + stringMaxLengthAnnotation.maxLength() + ")";
-            }
-
-            // Check for Nullable annotation
-            Nullable nullableAnnotation = field.getAnnotation(Nullable.class);
-            String nullableConstraint = nullableAnnotation != null && !nullableAnnotation.value() ? " NOT NULL" : "";
-
-            // Check for DefaultValue annotations
-            DefaultValueBoolean defaultValueBooleanAnnotation = field.getAnnotation(DefaultValueBoolean.class);
-            String booleanDefaultValue = defaultValueBooleanAnnotation != null ? " DEFAULT " + defaultValueBooleanAnnotation.value() : "";
-
-            DefaultValueString defaultValueStringAnnotation = field.getAnnotation(DefaultValueString.class);
-            String stringDefaultValue = defaultValueStringAnnotation != null ? " DEFAULT '" + defaultValueStringAnnotation.value() + "'" : "";
-
-            // Check for CompositionType annotation for foreign key
-            CompositionType compositionTypeAnnotation = field.getAnnotation(CompositionType.class);
-            String foreignKeyConstraint = "";
-            if (compositionTypeAnnotation != null) {
-                String referencedTable = compositionTypeAnnotation.value();
-                CascadeType cascadeAction = compositionTypeAnnotation.cascade();
-
-                foreignKeyConstraint = ", CONSTRAINT fk_" + clazz.getSimpleName().toLowerCase() + "_" + columnName +
-                        " FOREIGN KEY (" + columnName + "_id) REFERENCES " + referencedTable.toLowerCase() + " (id)" +
-                        switch (cascadeAction) {
-                            case CASCADE -> " ON DELETE CASCADE";
-                            case SET_NULL -> " ON DELETE SET NULL";
-                            case NO_ACTION -> " ON DELETE NO ACTION";
-                        };
-            }
-
-            // Build the column definition
-            if (field.getName().equals("id")) {
-                query.append("id SERIAL PRIMARY KEY");
-            } else if (sqlType != null) {
-                query.append(columnName).append(maxLengthConstraint).append(nullableConstraint);
-                // Append default value if available
-                if (fieldType == String.class) {
-                    query.append(stringDefaultValue);
-                } else if (fieldType == boolean.class) {
-                    query.append(booleanDefaultValue);
-                }
-            } else if (fieldType.isEnum()) {
-                query.append(columnName).append(" ").append(fieldType.getSimpleName()).append(stringDefaultValue);
-            } else if (isForeignKey(field.getType().getName())) {
-                query.append(columnName).append("_id INTEGER");
-                // Foreign key handling moved to CompositionType check
-            } else {
-                System.err.println("Unknown type for field " + columnName);
-                continue;
-            }
-
-            if (i < fields.length - 1) {
-                query.append(", ");
-            }
-
-            // Append foreign key constraint
-            if (!foreignKeyConstraint.isEmpty()) {
-                keys.append(foreignKeyConstraint);
-            }
-        }
-
-        query.append(keys.toString());
-
-        Class<?> parentClass = CheckExtends.check(FilesLoader.getEntities(), clazz);
-        if (parentClass != null) {
-            query.append(") INHERITS (").append(parentClass.getSimpleName().toLowerCase()).append(")");
-        } else {
-            query.append(")");
-        }
-
-        query.append(";");
-
-        return query.toString();
-    }
 
 
     private static boolean isForeignKey(String clazzName) {

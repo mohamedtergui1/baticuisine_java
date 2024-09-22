@@ -3,6 +3,7 @@ package main.java.com.app.entities;
 import main.java.com.app.enums.Status;
 import main.myframework.annotation.CompositionType;
 import main.myframework.annotation.DefaultValueString;
+import main.myframework.annotation.Nullable;
 import main.myframework.enums.CascadeType;
 import main.myframework.interfaces.GetId;
 
@@ -11,6 +12,7 @@ public class Project  implements GetId {
     private int id;
     private String projectName;
     private double profitMargin;
+    @Nullable()
     private double totalCost;
     @DefaultValueString(value = "IN_PROGRESS")
     private Status projectStatus;
