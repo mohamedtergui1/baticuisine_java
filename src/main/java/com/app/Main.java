@@ -23,6 +23,12 @@ import java.util.*;
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) {
+        Project project = new Project();
+        project.setProjectName("ciuhe");
+        project.setProfitMargin(2.2);
+        project.setClient(DependencyInjector.createInstance(ClientService.class).getClient(1));
+
+        DependencyInjector.createInstance(ProjectService.class).addProject(project);
 
         while (true) {
             showMainMenu();

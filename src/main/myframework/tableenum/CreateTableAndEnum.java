@@ -64,38 +64,51 @@ public class CreateTableAndEnum {
             if (maxLength != null) {
                 max = maxLength.maxLength();
             }
-            // Handle primary key
+            Nullable nullable = field.getAnnotation(Nullable.class);
+
             if (field.getName().equals("id")) {
                 query.append("id SERIAL PRIMARY KEY");
             }else
             if(fieldType == String.class){
                 sqlType = "VARCHAR("+max+")";
-
-                query.append(columnName).append(" ").append(sqlType);
                 DefaultValueString defaultValueStringAnnotation = field.getAnnotation(DefaultValueString.class);
+                query.append(columnName).append(" ").append(sqlType);
+                if(nullable != null && nullable.value()){
+                    query.append(" DEFAULT NULL");
+                } else
                 if (defaultValueStringAnnotation != null) {
                     query.append(" DEFAULT '").append(defaultValueStringAnnotation.value()).append("'");
                 }
             }
             else if (sqlType != null) {
                 query.append(columnName).append(" ").append(sqlType);
-
-                DefaultValueString defaultValueStringAnnotation = field.getAnnotation(DefaultValueString.class);
-                if (defaultValueStringAnnotation != null) {
-                    query.append(" DEFAULT '").append(defaultValueStringAnnotation.value()).append("'");
-                }
-                DefaultValueBoolean defaultValueBooleanAnnotation = field.getAnnotation(DefaultValueBoolean.class);
-                if (defaultValueBooleanAnnotation != null) {
-                    query.append(" DEFAULT ").append(defaultValueBooleanAnnotation.value());
+                if(nullable != null && nullable.value()){
+                    query.append(" DEFAULT NULL");
+                } else {
+                    DefaultValueString defaultValueStringAnnotation = field.getAnnotation(DefaultValueString.class);
+                    if (defaultValueStringAnnotation != null) {
+                        query.append(" DEFAULT '").append(defaultValueStringAnnotation.value()).append("'");
+                    }
+                    DefaultValueBoolean defaultValueBooleanAnnotation = field.getAnnotation(DefaultValueBoolean.class);
+                    if (defaultValueBooleanAnnotation != null) {
+                        query.append(" DEFAULT ").append(defaultValueBooleanAnnotation.value());
+                    }
                 }
 
             }
             // Handle enums
             else if (fieldType.isEnum()) {
 
-                query.append(columnName).append(" VARCHAR(" + max + ")"); // Adjust as needed
+                query.append(columnName).append(" ").append(fieldType.getSimpleName()).append(" ");
+                DefaultValueString defaultValueStringAnnotation = field.getAnnotation(DefaultValueString.class);
+                if(nullable != null && nullable.value()){
+                    query.append(" DEFAULT NULL");
+                } else
+                if (defaultValueStringAnnotation != null) {
+                    query.append(" DEFAULT '").append(defaultValueStringAnnotation.value()).append("'");
+                }
             }
-            // Handle foreign keys
+
             else if (isForeignKey(field.getType().getName())) {
                 CascadeType cascade = CascadeType.NO_ACTION;
                 String action =  "NO ACTION";
@@ -138,8 +151,6 @@ public class CreateTableAndEnum {
 
         return query.toString();
     }
-
-
 
     public static boolean dropTable(Class<?> clazz, Connection connection) {
         // Determine the table name based on the class name
@@ -237,9 +248,6 @@ public class CreateTableAndEnum {
             return false;
         }
     }
-
-
-
 
     private static boolean isForeignKey(String clazzName) {
         try {

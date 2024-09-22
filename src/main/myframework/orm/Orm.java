@@ -45,28 +45,12 @@ public abstract class Orm<T> {
                 Object value = field.get(obj);
 
                 if (value != null && !field.getName().equals("id")) {
-                    if (field.getType() == String.class) {
-                        pstmt.setString(parameterIndex++, (String) value);
-                    } else if (field.getType() == Integer.class) {
-                        pstmt.setInt(parameterIndex++, (Integer) value);
-                    } else if (field.getType() == Long.class) {
-                        pstmt.setLong(parameterIndex++, (Long) value);
-                    } else if (field.getType() == Double.class) {
-                        pstmt.setDouble(parameterIndex++, (Double) value);
-                    } else if (field.getType() == Float.class) {
-                        pstmt.setFloat(parameterIndex++, (Float) value);
-                    } else if (field.getType() == Boolean.class) {
-                        pstmt.setBoolean(parameterIndex++, (Boolean) value);
-                    } else if (field.getType() == java.sql.Date.class) {
-                        pstmt.setDate(parameterIndex++, (java.sql.Date) value);
-                    } else if (field.getType() == java.sql.Timestamp.class) {
-                        pstmt.setTimestamp(parameterIndex++, (java.sql.Timestamp) value);
-                    } else if (field.getType() == java.sql.Time.class) {
-                        pstmt.setTime(parameterIndex++, (java.sql.Time) value);
-                    } else if (field.getType().isEnum()) {
-                        // Handle enum types
-                        Enum<?> enumValue = (Enum<?>) value;
-                        pstmt.setString(parameterIndex++, enumValue.name()); // or use enumValue.ordinal() if preferred
+                    if (ALLOWED_TYPES.contains(field.getType().getName())) {
+                        if (value instanceof java.sql.Date) {
+                            pstmt.setDate(parameterIndex++, (java.sql.Date) value);
+                        } else {
+                            pstmt.setObject(parameterIndex++, value);
+                        }
                     } else if (value instanceof GetId) {
                         pstmt.setInt(parameterIndex++, ((GetId) value).getId());
                     } else {
@@ -81,6 +65,8 @@ public abstract class Orm<T> {
             return false;
         }
     }
+
+
 
     public boolean delete(T obj) {
         if (obj == null) {
