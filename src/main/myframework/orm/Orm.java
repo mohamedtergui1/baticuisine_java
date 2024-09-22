@@ -1,6 +1,5 @@
 package main.myframework.orm;
 
-import main.java.com.app.entities.Labor;
 import main.myframework.database.PostgreSQLDatabase;
 import main.myframework.interfaces.GetId;
 
@@ -30,7 +29,7 @@ public abstract class Orm<T> {
         return queryBuilder;
     }
 
-    public boolean insert(T obj) {
+    public T insert(T obj) {
         if (obj == null) {
             throw new IllegalArgumentException("Object cannot be null");
         }
@@ -38,7 +37,7 @@ public abstract class Orm<T> {
         String sql = generateInsertSQL(tableName, obj);
         System.out.println(sql);
 
-        try (PreparedStatement pstmt = con.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             int parameterIndex = 1;
             for (Field field : getEntityClass().getDeclaredFields()) {
                 field.setAccessible(true);
@@ -58,11 +57,71 @@ public abstract class Orm<T> {
                     }
                 }
             }
+
             int rowsAffected = pstmt.executeUpdate();
-            return rowsAffected > 0;
-        } catch (SQLException | IllegalAccessException e) {
+
+            // Get the generated ID
+            if (rowsAffected > 0) {
+                try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        int generatedId = rs.getInt(1);
+                        Field idField = getEntityClass().getDeclaredField("id");
+                        idField.setAccessible(true);
+                        idField.set(obj, generatedId);  // Set the generated ID
+                    }
+                }
+            }
+            return obj;  // Return the modified object
+        } catch (SQLException | IllegalAccessException | NoSuchFieldException e) {
             System.out.println("Error during insert: " + e.getMessage());
-            return false;
+            return null;  // Return null if there was an error
+        }
+    }
+
+    public T update(T obj) {
+        if (obj == null) {
+            throw new IllegalArgumentException("Object cannot be null");
+        }
+        String tableName = getEntityClass().getSimpleName().toLowerCase();
+        String sql = generateUpdateSQL(tableName, obj);
+        System.out.println("Generated SQL for update: " + sql);
+
+        try (PreparedStatement pstmt = con.prepareStatement(sql)) {
+            int parameterIndex = 1;
+            Field[] fields = getEntityClass().getDeclaredFields();
+            for (Field field : fields) {
+                field.setAccessible(true);
+                Object value = field.get(obj);
+
+                if (value != null) {
+                    String typeName = field.getType().getName();
+                    if (ALLOWED_TYPES.contains(typeName)) {
+                        if (value instanceof java.sql.Date) {
+                            pstmt.setDate(parameterIndex++, (java.sql.Date) value);
+                        } else if (!field.getName().equals("id")) {
+                            pstmt.setObject(parameterIndex++, value);
+                        }
+                    } else if (value instanceof GetId) {
+                        pstmt.setInt(parameterIndex++, ((GetId) value).getId());
+                    } else {
+                        throw new SQLException("Unsupported type: " + typeName);
+                    }
+                }
+            }
+
+            Field idField = getEntityClass().getDeclaredField("id");
+            idField.setAccessible(true);
+            Object idValue = idField.get(obj);
+            if (idValue == null) {
+                throw new IllegalArgumentException("Object must have a non-null 'id' field for update.");
+            }
+            pstmt.setObject(parameterIndex, idValue);
+
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0 ? obj : null;  // Return the modified object if update was successful
+        } catch (SQLException | IllegalAccessException | NoSuchFieldException e) {
+            System.out.println("Error during update: " + e.getMessage());
+            return null;  // Return null if there was an error
         }
     }
 
@@ -99,53 +158,7 @@ public abstract class Orm<T> {
         }
     }
 
-    public boolean update(T obj) {
-        if (obj == null) {
-            throw new IllegalArgumentException("Object cannot be null");
-        }
-        String tableName = getEntityClass().getSimpleName().toLowerCase();
-        String sql = generateUpdateSQL(tableName, obj);
-        System.out.println("Generated SQL for update: " + sql);
 
-        try (PreparedStatement pstmt = con.prepareStatement(sql)) {
-            int parameterIndex = 1;
-            Field[] fields = getEntityClass().getDeclaredFields();
-            for (Field field : fields) {
-                field.setAccessible(true);
-                Object value = field.get(obj);
-
-                if (value != null) {
-                    String typeName = field.getType().getName();
-                    if (ALLOWED_TYPES.contains(typeName)) {
-                        if (value instanceof java.sql.Date) {
-                            pstmt.setDate(parameterIndex++, (java.sql.Date) value);
-                        } else if (!field.getName().equals("id")) {
-                            pstmt.setObject(parameterIndex++, value);
-                        }
-                    } else if (value instanceof GetId) {
-                        pstmt.setInt(parameterIndex++, ((GetId) value).getId());
-                    } else {
-                        throw new SQLException("Unsupported type: " + typeName);
-                    }
-                }
-            }
-
-
-            Field idField = getEntityClass().getDeclaredField("id");
-            idField.setAccessible(true);
-            Object idValue = idField.get(obj);
-            if (idValue == null) {
-                throw new IllegalArgumentException("Object must have a non-null 'id' field for update.");
-            }
-            pstmt.setObject(parameterIndex, idValue);
-
-            int rowsAffected = pstmt.executeUpdate();
-            return rowsAffected > 0;
-        } catch (SQLException | IllegalAccessException | NoSuchFieldException e) {
-            System.out.println("Error during update: " + e.getMessage());
-            return false;
-        }
-    }
 
     public ArrayList<T> all() {
         return all(getEntityClass(), null, null);
@@ -170,8 +183,6 @@ public abstract class Orm<T> {
                     for (Field field :  ReflectionUtil.getAllDeclaredFields(entityClass)) {
                         fetch(rs, entity, field);
                     }
-
-
 
                     results.add(entity);
                 }

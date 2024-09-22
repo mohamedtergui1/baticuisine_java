@@ -26,7 +26,7 @@ public class CreateRepositoryAndService {
                     writer.write("package main.java.com.app.repository."+className.toLowerCase()+";\n" +
                             "\n" +
                             "import main.java.com.app.entities." + className + ";\n" +
-                            "import main.migrations.orm.Orm;\n" +
+                            "import  main.myframework.orm.Orm;\n" +
                             "\n" +
                             "\n" +
                             "import java.util.List;\n" +
@@ -40,12 +40,12 @@ public class CreateRepositoryAndService {
                             "    }\n" +
                             "\n" +
                             "    @Override\n" +
-                            "    public boolean insert(" + className + " entity) {\n" +
+                            "    public "+ className + " insert(" + className + " entity) {\n" +
                             "        return super.insert(entity);\n" +
                             "    }\n" +
                             "\n" +
                             "    @Override\n" +
-                            "    public boolean update(" + className + " entity) {\n" +
+                            "    public "+ className + " update(" + className + " entity) {\n" +
                             "        return super.update(entity);\n" +
                             "    }\n" +
                             "\n" +
@@ -134,7 +134,7 @@ public class CreateRepositoryAndService {
             if (file.createNewFile()) {
 
                 try (FileWriter writer = new FileWriter(file)) {
-                    writer.write("package main.java.com.app.service;\nimport main.migrations.annotation.InjectClass;\n" +
+                    writer.write("package main.java.com.app.service;\nimport main.myframework.annotation.InjectClass;\n" +
                             "\n" +
                             "import main.java.com.app.entities."+className+";\n" +
                             "import main.java.com.app.repository."+ className.toLowerCase() +"."+className+"Repository;\n" +
@@ -153,13 +153,13 @@ public class CreateRepositoryAndService {
                             "    public List<"+className+"> getAll"+className+"(){\n" +
                             "        return "+ className.toLowerCase() +"Repository.getAll();\n" +
                             "    }\n" +
-                            "    public boolean update"+className+"("+className+" "+ className.toLowerCase() +"){\n" +
+                            "    public "+className+" update"+className+"("+className+" "+ className.toLowerCase() +"){\n" +
                             "        return "+ className.toLowerCase() +"Repository.update("+ className.toLowerCase() +");\n" +
                             "    }\n" +
                             "    public boolean delete"+className+"("+className+" "+ className.toLowerCase() +"){\n" +
                             "        return "+ className.toLowerCase() +"Repository.delete("+ className.toLowerCase() +");\n" +
                             "    }\n" +
-                            "    public boolean add"+className+"("+className+" "+ className.toLowerCase() +"){\n" +
+                            "    public "+ className + " add"+className+"("+className+" "+ className.toLowerCase() +"){\n" +
                             "        return "+ className.toLowerCase() +"Repository.insert("+ className.toLowerCase() +");\n" +
                             "    }\n" +
                             "\n" +
