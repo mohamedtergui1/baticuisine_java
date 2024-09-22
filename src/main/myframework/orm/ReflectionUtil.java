@@ -21,4 +21,14 @@ public class ReflectionUtil {
 
         return allFields;
     }
+    public static Field getFieldByName(Class<?> clazz, String fieldName)  {
+        List<Field> fields = getAllDeclaredFields(clazz);
+        for (Field field : fields) {
+            if (field.getName().equals(fieldName)) {
+                return field;
+            }
+        }
+        return null;
+    }
+
 }

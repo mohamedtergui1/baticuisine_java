@@ -8,6 +8,7 @@ import main.java.com.app.entities.Material;
 import main.java.com.app.entities.Project;
 
 import main.java.com.app.repository.client.ClientRepositoryImpl;
+import main.java.com.app.repository.labor.LaborRepositoryImpl;
 import main.java.com.app.service.ClientService;
 import main.java.com.app.service.LaborService;
 import main.java.com.app.service.MaterialService;
@@ -23,7 +24,11 @@ import java.util.*;
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) {
+        LaborService laborService = new LaborService(new LaborRepositoryImpl());
+        Labor labor = laborService.getLabor(1);
 
+        labor = laborService.updateLabor(labor);
+        System.out.println(labor);
 
         while (true) {
             showMainMenu();
@@ -82,7 +87,6 @@ public class Main {
 
 
         createNewProject(client);
-
 
     }
 
@@ -181,14 +185,17 @@ public class Main {
     private static void displayExistingProjects() {
         System.out.println("--- Affichage des projets existants ---");
         System.out.println("Liste des projets : ");
+        displaALLProjects();
+    }
+    private static void displaALLProjects() {
         List<Project> projects  = DependencyInjector.createInstance(ProjectService.class).getAllProject();
         for (Project project : projects) {
             System.out.println(project);
         }
     }
-
     private static void calculateProjectCost() {
         System.out.println("--- Calcul du coût d'un projet ---");
+        displaALLProjects();
         System.out.print("Sélectionnez un projet parmi la liste des projets existants : ");
         int projectId = getUserChoice();
         System.out.println("Calcul du coût en cours...");

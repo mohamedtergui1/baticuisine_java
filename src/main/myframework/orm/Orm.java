@@ -39,7 +39,7 @@ public abstract class Orm<T> {
 
         try (PreparedStatement pstmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             int parameterIndex = 1;
-            for (Field field : getEntityClass().getDeclaredFields()) {
+            for (Field field : ReflectionUtil.getAllDeclaredFields(getEntityClass())) {
                 field.setAccessible(true);
                 Object value = field.get(obj);
 
@@ -65,14 +65,14 @@ public abstract class Orm<T> {
                 try (ResultSet rs = pstmt.getGeneratedKeys()) {
                     if (rs.next()) {
                         int generatedId = rs.getInt(1);
-                        Field idField = getEntityClass().getDeclaredField("id");
+                        Field idField = ReflectionUtil.getFieldByName(getEntityClass(),"id");;
                         idField.setAccessible(true);
                         idField.set(obj, generatedId);  // Set the generated ID
                     }
                 }
             }
             return obj;  // Return the modified object
-        } catch (SQLException | IllegalAccessException | NoSuchFieldException e) {
+        } catch (SQLException | IllegalAccessException e) {
             System.out.println("Error during insert: " + e.getMessage());
             return null;  // Return null if there was an error
         }
@@ -88,12 +88,12 @@ public abstract class Orm<T> {
 
         try (PreparedStatement pstmt = con.prepareStatement(sql)) {
             int parameterIndex = 1;
-            Field[] fields = getEntityClass().getDeclaredFields();
+            List<Field> fields = ReflectionUtil.getAllDeclaredFields(getEntityClass());
             for (Field field : fields) {
                 field.setAccessible(true);
                 Object value = field.get(obj);
 
-                if (value != null) {
+
                     String typeName = field.getType().getName();
                     if (ALLOWED_TYPES.contains(typeName)) {
                         if (value instanceof java.sql.Date) {
@@ -106,20 +106,21 @@ public abstract class Orm<T> {
                     } else {
                         throw new SQLException("Unsupported type: " + typeName);
                     }
-                }
+
             }
 
-            Field idField = getEntityClass().getDeclaredField("id");
+            Field idField = ReflectionUtil.getFieldByName(getEntityClass(),"id");;
             idField.setAccessible(true);
             Object idValue = idField.get(obj);
             if (idValue == null) {
                 throw new IllegalArgumentException("Object must have a non-null 'id' field for update.");
             }
+            System.out.println("id " + idValue);
             pstmt.setObject(parameterIndex, idValue);
 
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0 ? obj : null;  // Return the modified object if update was successful
-        } catch (SQLException | IllegalAccessException | NoSuchFieldException e) {
+        } catch (SQLException | IllegalAccessException e) {
             System.out.println("Error during update: " + e.getMessage());
             return null;  // Return null if there was an error
         }
@@ -424,7 +425,7 @@ public abstract class Orm<T> {
         StringBuilder sql = new StringBuilder("INSERT INTO ").append(tableName).append(" (");
         StringBuilder values = new StringBuilder(" VALUES (");
 
-        Field[] fields = getEntityClass().getDeclaredFields();
+        List<Field> fields = ReflectionUtil.getAllDeclaredFields(getEntityClass());;
         boolean firstField = true;
 
         for (Field field : fields) {
@@ -481,7 +482,7 @@ public abstract class Orm<T> {
 
     private String generateUpdateSQL(String tableName, T obj) {
         StringBuilder sql = new StringBuilder("UPDATE ").append(tableName).append(" SET  ");
-        Field[] fields = getEntityClass().getDeclaredFields();
+        List<Field> fields = ReflectionUtil.getAllDeclaredFields(getEntityClass());
         boolean firstField = true;
 
         for (Field field : fields) {

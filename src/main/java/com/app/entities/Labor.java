@@ -21,4 +21,23 @@ public class Labor extends Component {
     public double calculateCost() {
         return getHourlyRate() * getHoursWorked() * getWorkerProductivity();
     }
+    @Override
+    public String toString() {
+        return String.format(
+                "{\"id\": %d, \"name\": \"%s\", \"unitCost\": %.2f, \"quantity\": %.2f, \"componentType\": \"%s\", \"vatRate\": %.2f, \"transportCost\": %.2f, \"qualityCoefficient\": %.2f, \"hourlyRate\": %.2f, \"hoursWorked\": %.2f, \"workerProductivity\": %.2f, \"project\": %s}",
+                getId(),
+                getName(),
+                getUnitCost(),
+                getQuantity(),
+                getComponentType(),
+                getVatRate(),
+                getTransportCost(),
+                getQualityCoefficient(),
+                hourlyRate,
+                hoursWorked,
+                workerProductivity,
+                getProject() != null ? getProject() : null
+        );
+    }
+
 }
