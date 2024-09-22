@@ -3,25 +3,36 @@ package main.java.com.app;
 
 
 import main.java.com.app.entities.Client;
+import main.java.com.app.entities.Labor;
+import main.java.com.app.entities.Material;
 import main.java.com.app.entities.Project;
 
 import main.java.com.app.repository.client.ClientRepositoryImpl;
 import main.java.com.app.service.ClientService;
+import main.java.com.app.service.LaborService;
+import main.java.com.app.service.MaterialService;
 import main.java.com.app.service.ProjectService;
 import main.myframework.injector.DependencyInjector;
+import main.myframework.orm.ReflectionUtil;
 
 
+import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.*;
 
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
-    public static void main(String[] args) throws SQLException, IllegalAccessException {
+    public static void main(String[] args) {
 
-        List<Client> clients = new ClientRepositoryImpl().searchByName("a");
-        for (Client client : clients) {
-            System.out.println(client);
+            List<Project>  materials = DependencyInjector.createInstance(ProjectService.class).getAllProject();
+            for (Project material : materials) {
+                System.out.println(material);
+            }
+        List<Field> Fields = ReflectionUtil.getAllDeclaredFields(Labor.class);
+        for (Field field : Fields) {
+            System.out.println(field.getName());
         }
+
         while (true) {
             showMainMenu();
             int choice = getUserChoice();

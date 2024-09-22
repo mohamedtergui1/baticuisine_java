@@ -1,17 +1,28 @@
 package main.java.com.app.entities;
 
+import main.myframework.annotation.DefaultValueBoolean;
+import main.myframework.annotation.Nullable;
+import main.myframework.annotation.StringMinLength;
 import main.myframework.interfaces.GetId;
-import main.myframework.annotation.StringValidation;
+import main.myframework.annotation.StringMaxLength;
 
 public class Client implements GetId {
 
     private int id;
-    @StringValidation(minLength = 4,maxLength = 30)
+    @StringMaxLength(maxLength = 30)
+    @Nullable(false)
+    @StringMinLength(6)
     private String name;
-    @StringValidation(minLength = 10,maxLength = 255)
+    @StringMaxLength(maxLength = 255)
+    @Nullable(false)
+    @StringMinLength(6)
     private String address;
-    @StringValidation(minLength = 10,maxLength = 13)
+    @Nullable(false)
+    @StringMaxLength(maxLength = 13)
+    @StringMinLength(9)
     private String phoneNumber;
+    @Nullable()
+    @DefaultValueBoolean(false)
     private boolean isProfessional;
 
     @Override
@@ -22,7 +33,6 @@ public class Client implements GetId {
     public void setId(int id) {
         this.id = id;
     }
-
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }

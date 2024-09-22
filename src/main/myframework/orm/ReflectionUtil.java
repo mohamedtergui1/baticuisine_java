@@ -1,0 +1,24 @@
+package main.myframework.orm;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ReflectionUtil {
+
+    public static List<Field> getAllDeclaredFields(Class<?> clazz) {
+        List<Field> allFields = new ArrayList<>();
+
+        // Loop through the class hierarchy
+        while (clazz != null) {
+            Field[] fields = clazz.getDeclaredFields();
+            for (Field field : fields) {
+                allFields.add(field); // Add all declared fields (protected, private, etc.)
+            }
+            // Move to the superclass
+            clazz = clazz.getSuperclass();
+        }
+
+        return allFields;
+    }
+}

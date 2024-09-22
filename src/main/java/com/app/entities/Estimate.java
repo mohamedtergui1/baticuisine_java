@@ -1,5 +1,7 @@
 package main.java.com.app.entities;
 
+import main.myframework.annotation.CompositionType;
+import main.myframework.enums.CascadeType;
 import main.myframework.interfaces.GetId;
 
 import java.time.LocalDate;
@@ -10,6 +12,7 @@ public class Estimate implements GetId {
     private LocalDate issueDate;
     private LocalDate validityDate;
     private boolean isAccepted;
+    @CompositionType(cascade = CascadeType.CASCADE)
     private Project project;
 
     public void setProject(Project project) {

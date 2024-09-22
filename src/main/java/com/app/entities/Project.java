@@ -1,6 +1,9 @@
 package main.java.com.app.entities;
 
 import main.java.com.app.enums.Status;
+import main.myframework.annotation.CompositionType;
+import main.myframework.annotation.DefaultValueString;
+import main.myframework.enums.CascadeType;
 import main.myframework.interfaces.GetId;
 
 public class Project  implements GetId {
@@ -9,7 +12,9 @@ public class Project  implements GetId {
     private String projectName;
     private double profitMargin;
     private double totalCost;
+    @DefaultValueString(value = "IN_PROGRESS")
     private Status projectStatus;
+    @CompositionType(cascade = CascadeType.CASCADE)
     private Client client;
 
     public Client getClient() {

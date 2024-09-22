@@ -1,5 +1,6 @@
 package main.myframework.orm;
 
+import main.java.com.app.entities.Labor;
 import main.myframework.database.PostgreSQLDatabase;
 import main.myframework.interfaces.GetId;
 
@@ -7,8 +8,6 @@ import main.myframework.interfaces.GetId;
 import java.sql.*;
 import java.lang.reflect.Field;
 import java.util.*;
-
-
 
 public abstract class Orm<T> {
     QueryBuilder queryBuilder;
@@ -21,6 +20,7 @@ public abstract class Orm<T> {
     static final Set<String> ALLOWED_TYPES = new HashSet<>(Arrays.asList("int","boolean" , "float", "java.lang.String", "char", "long", "double", "java.sql.Date"));
 
     protected abstract Class<T> getEntityClass();
+
     protected Set<Class<?>> manyRelations() {
         return new HashSet<>();
     }
@@ -29,7 +29,6 @@ public abstract class Orm<T> {
     {
         return queryBuilder;
     }
-
 
     public boolean insert(T obj) {
         if (obj == null) {
@@ -82,7 +81,6 @@ public abstract class Orm<T> {
             return false;
         }
     }
-
 
     public boolean delete(T obj) {
         if (obj == null) {
@@ -183,69 +181,11 @@ public abstract class Orm<T> {
                 while (rs.next()) {
                     T entity = entityClass.getDeclaredConstructor().newInstance();
 
-                    for (Field field : entityClass.getDeclaredFields()) {
-                        field.setAccessible(true);
-                        String fieldName = field.getName();
-                        String fieldType = field.getType().getName();
-
-
-                        String fieldColumnName = getColumnNameForField(field);
-
-
-                        Object columnValue = rs.getObject(fieldColumnName);
-
-                        try {
-                            if (field.getType().isEnum()) {
-
-                                if (columnValue != null) {
-                                    String enumName = columnValue.toString();
-                                    field.set(entity, Enum.valueOf((Class<Enum>) field.getType(), enumName));
-                                } else {
-                                    field.set(entity, null);
-                                }
-                            } else {
-
-                                switch (fieldType) {
-                                    case "java.lang.String":
-                                        field.set(entity, columnValue != null ? columnValue.toString() : null);
-                                        break;
-                                    case "int":
-                                    case "java.lang.Integer":
-                                        field.set(entity, columnValue != null ? ((Number) columnValue).intValue() : null);
-                                        break;
-                                    case "double":
-                                    case "java.lang.Double":
-                                        field.set(entity, columnValue != null ? ((Number) columnValue).doubleValue() : null);
-                                        break;
-                                    case "float":
-                                    case "java.lang.Float":
-                                        field.set(entity, columnValue != null ? ((Number) columnValue).floatValue() : null);
-                                        break;
-                                    case "long":
-                                    case "java.lang.Long":
-                                        field.set(entity, columnValue != null ? ((Number) columnValue).longValue() : null);
-                                        break;
-                                    case "boolean":
-                                    case "java.lang.Boolean":
-                                        field.set(entity, columnValue != null ? ((Boolean) columnValue) : null);
-                                        break;
-                                    case "java.sql.Date":
-                                        field.set(entity, columnValue != null ? new java.sql.Date(((java.sql.Date) columnValue).getTime()) : null);
-                                        break;
-                                    default:
-                                        if (GetId.class.isAssignableFrom(field.getType())) {
-                                            Object relatedEntity = getById((Integer) columnValue, field.getType().getName());
-                                            field.set(entity, relatedEntity);
-                                        } else {
-                                            System.err.println("Unsupported field type: " + fieldType);
-                                        }
-                                        break;
-                                }
-                            }
-                        } catch (Exception e) {
-                            System.err.println("Error setting field value: " + fieldName + " - " + e.getMessage());
-                        }
+                    for (Field field :  ReflectionUtil.getAllDeclaredFields(entityClass)) {
+                        fetch(rs, entity, field);
                     }
+
+
 
                     results.add(entity);
                 }
@@ -270,9 +210,10 @@ public abstract class Orm<T> {
         }
     }
 
-    public    Object getById(Integer id, String className) {
+    public Object getById(Integer id, String className) {
         if (id == null || className == null || className.isEmpty()) {
-             System.err.println("Invalid id or className");
+            System.err.println("Invalid id or className");
+            return null; // Early return if invalid
         }
 
         try {
@@ -281,75 +222,25 @@ public abstract class Orm<T> {
             String tableName = clazz.getSimpleName().toLowerCase(); // Use class name as table name
             String sql = generateSelectQuery(tableName, "id");
 
-
             // Prepare the statement
             try (PreparedStatement pstmt = con.prepareStatement(sql)) {
                 pstmt.setInt(1, id);
 
                 // Execute the query
-                try (ResultSet resultSet = pstmt.executeQuery()) {
+                try (ResultSet rs = pstmt.executeQuery()) {
                     // Check if a result is returned
-                    if (resultSet.next()) {
+                    if (rs.next()) {
+                        Object entity = clazz.getDeclaredConstructor().newInstance();
 
-
-                        Object instance = clazz.getDeclaredConstructor().newInstance();
-
-                        // Get all fields of the class
-                        Field[] fields = clazz.getDeclaredFields();
+                        // Get all fields of the class, including protected ones
+                        List<Field> fields = ReflectionUtil.getAllDeclaredFields(clazz);
 
                         // Populate the instance with data from the result set
                         for (Field field : fields) {
-                            field.setAccessible(true); // Allow access to private fields
-
-                            String columnName = field.getName().toLowerCase() +
-                                    (ALLOWED_TYPES.contains(field.getType().getName()) ? "" : "_id");
-
-                            Object value = resultSet.getObject(columnName);
-
-                            // Handle data type conversion based on field type
-                            String fieldType = field.getType().getName();
-
-                            switch (fieldType) {
-                                case "java.lang.String":
-                                    field.set(instance, value != null ? value.toString() : null);
-                                    break;
-                                case "int":
-                                case "java.lang.Integer":
-                                    field.set(instance, value != null ? ((Number) value).intValue() : null);
-                                    break;
-                                case "double":
-                                case "java.lang.Double":
-                                    field.set(instance, value != null ? ((Number) value).doubleValue() : null);
-                                    break;
-                                case "float":
-                                case "java.lang.Float":
-                                    field.set(instance, value != null ? ((Number) value).floatValue() : null);
-                                    break;
-                                case "long":
-                                case "java.lang.Long":
-                                    field.set(instance, value != null ? ((Number) value).longValue() : null);
-                                    break;
-                                case "boolean":
-                                case "java.lang.Boolean":
-                                    field.set(instance, value != null ? ((Boolean) value) : null);
-                                    break;
-                                case "java.sql.Date":
-                                    field.set(instance, value != null ? new java.sql.Date(((java.sql.Date) value).getTime()) : null);
-                                    break;
-                                default:
-                                    // Handle complex types or foreign keys
-                                    if (value != null) {
-                                        Class<?> fieldTypeClass = field.getType();
-                                        Object relatedInstance = getById((Integer) value, fieldTypeClass.getName());
-                                        field.set(instance, relatedInstance);
-                                    }
-                                    else
-                                        field.set(instance, null);
-                                    break;
-                            }
+                            fetch(rs, entity, field);
                         }
 
-                        return instance;
+                        return entity;
                     } else {
                         return null; // No record found
                     }
@@ -360,6 +251,71 @@ public abstract class Orm<T> {
             return null; // Handle the exception as needed
         }
     }
+
+    private void fetch(ResultSet rs, Object entity, Field field) throws SQLException {
+        field.setAccessible(true);
+        String fieldName = field.getName();
+        String fieldType = field.getType().getName();
+
+
+        String fieldColumnName = getColumnNameForField(field);
+
+
+        Object columnValue = rs.getObject(fieldColumnName);
+
+        try {
+            if (field.getType().isEnum()) {
+
+                if (columnValue != null) {
+                    String enumName = columnValue.toString();
+                    field.set(entity, Enum.valueOf((Class<Enum>) field.getType(), enumName));
+                } else {
+                    field.set(entity, null);
+                }
+            } else {
+
+                switch (fieldType) {
+                    case "java.lang.String":
+                        field.set(entity, columnValue != null ? columnValue.toString() : null);
+                        break;
+                    case "int":
+                    case "java.lang.Integer":
+                        field.set(entity, columnValue != null ? ((Number) columnValue).intValue() : null);
+                        break;
+                    case "double":
+                    case "java.lang.Double":
+                        field.set(entity, columnValue != null ? ((Number) columnValue).doubleValue() : null);
+                        break;
+                    case "float":
+                    case "java.lang.Float":
+                        field.set(entity, columnValue != null ? ((Number) columnValue).floatValue() : null);
+                        break;
+                    case "long":
+                    case "java.lang.Long":
+                        field.set(entity, columnValue != null ? ((Number) columnValue).longValue() : null);
+                        break;
+                    case "boolean":
+                    case "java.lang.Boolean":
+                        field.set(entity, columnValue != null ? ((Boolean) columnValue) : null);
+                        break;
+                    case "java.sql.Date":
+                        field.set(entity, columnValue != null ? new java.sql.Date(((java.sql.Date) columnValue).getTime()) : null);
+                        break;
+                    default:
+                        if (GetId.class.isAssignableFrom(field.getType())) {
+                            Object relatedEntity = getById((Integer) columnValue, field.getType().getName());
+                            field.set(entity, relatedEntity);
+                        } else {
+                            System.err.println("Unsupported field type: " + fieldType);
+                        }
+                        break;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error setting field value: " + fieldName + " - " + e.getMessage());
+        }
+    }
+
 
     public  Object getById(Integer id){
         return getById(id,getEntityClass().getName());

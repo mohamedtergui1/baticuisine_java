@@ -1,17 +1,20 @@
 package main.java.com.app.entities;
 
+import main.myframework.annotation.CompositionType;
+import main.myframework.enums.CascadeType;
 import main.myframework.interfaces.GetId;
 
 public abstract class Component implements GetId {
-    private int id;
-    private String name;
-    private double unitCost;
-    private double quantity;
-    private String componentType;
-    private double vatRate;
-    private double transportCost;
-    private double qualityCoefficient;
-    private Project project;
+    protected int id;
+    protected String name;
+    protected double unitCost;
+    protected double quantity;
+    protected String componentType;
+    protected double vatRate;
+    protected double transportCost;
+    protected double qualityCoefficient;
+    @CompositionType(cascade = CascadeType.CASCADE)
+    protected Project project;
 
     public void setProject(Project project) {
         this.project = project;

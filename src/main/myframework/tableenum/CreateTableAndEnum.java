@@ -1,5 +1,6 @@
 package main.myframework.tableenum;
 
+import main.myframework.enums.CascadeType;
 import main.myframework.interfaces.GetId;
 import main.myframework.checkextends.CheckExtends;
 import main.myframework.createrepositoryandservice.CreateRepositoryAndService;
@@ -18,6 +19,14 @@ import java.util.Map;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Instant;
+
+
+import main.myframework.annotation.DefaultValueString;
+import main.myframework.annotation.StringMaxLength;
+import main.myframework.annotation.StringMinLength;
+import main.myframework.annotation.Nullable;
+import main.myframework.annotation.DefaultValueBoolean;
+import main.myframework.annotation.CompositionType;
 
 public class CreateTableAndEnum {
 
@@ -142,29 +151,63 @@ public class CreateTableAndEnum {
         query.append(clazz.getSimpleName().toLowerCase()).append(" (");
         StringBuilder keys = new StringBuilder();
         Field[] fields = clazz.getDeclaredFields();
+
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
             String columnName = field.getName().toLowerCase();
             Class<?> fieldType = field.getType();
             String sqlType = sqlTypeMap.get(fieldType);
 
+            // Check for StringMaxLength annotation
+            StringMaxLength stringMaxLengthAnnotation = field.getAnnotation(StringMaxLength.class);
+            String maxLengthConstraint = "";
+            if (stringMaxLengthAnnotation != null) {
+                maxLengthConstraint = " VARCHAR(" + stringMaxLengthAnnotation.maxLength() + ")";
+            }
+
+            // Check for Nullable annotation
+            Nullable nullableAnnotation = field.getAnnotation(Nullable.class);
+            String nullableConstraint = nullableAnnotation != null && !nullableAnnotation.value() ? " NOT NULL" : "";
+
+            // Check for DefaultValue annotations
+            DefaultValueBoolean defaultValueBooleanAnnotation = field.getAnnotation(DefaultValueBoolean.class);
+            String booleanDefaultValue = defaultValueBooleanAnnotation != null ? " DEFAULT " + defaultValueBooleanAnnotation.value() : "";
+
+            DefaultValueString defaultValueStringAnnotation = field.getAnnotation(DefaultValueString.class);
+            String stringDefaultValue = defaultValueStringAnnotation != null ? " DEFAULT '" + defaultValueStringAnnotation.value() + "'" : "";
+
+            // Check for CompositionType annotation for foreign key
+            CompositionType compositionTypeAnnotation = field.getAnnotation(CompositionType.class);
+            String foreignKeyConstraint = "";
+            if (compositionTypeAnnotation != null) {
+                String referencedTable = compositionTypeAnnotation.value();
+                CascadeType cascadeAction = compositionTypeAnnotation.cascade();
+
+                foreignKeyConstraint = ", CONSTRAINT fk_" + clazz.getSimpleName().toLowerCase() + "_" + columnName +
+                        " FOREIGN KEY (" + columnName + "_id) REFERENCES " + referencedTable.toLowerCase() + " (id)" +
+                        switch (cascadeAction) {
+                            case CASCADE -> " ON DELETE CASCADE";
+                            case SET_NULL -> " ON DELETE SET NULL";
+                            case NO_ACTION -> " ON DELETE NO ACTION";
+                        };
+            }
+
+            // Build the column definition
             if (field.getName().equals("id")) {
                 query.append("id SERIAL PRIMARY KEY");
             } else if (sqlType != null) {
-                query.append(columnName).append(" ").append(sqlType);
+                query.append(columnName).append(maxLengthConstraint).append(nullableConstraint);
+                // Append default value if available
+                if (fieldType == String.class) {
+                    query.append(stringDefaultValue);
+                } else if (fieldType == boolean.class) {
+                    query.append(booleanDefaultValue);
+                }
             } else if (fieldType.isEnum()) {
-                query.append(columnName).append( " " + fieldType.getSimpleName());
+                query.append(columnName).append(" ").append(fieldType.getSimpleName()).append(stringDefaultValue);
             } else if (isForeignKey(field.getType().getName())) {
                 query.append(columnName).append("_id INTEGER");
-                keys.append(", CONSTRAINT fk_")
-                        .append(clazz.getSimpleName().toLowerCase())
-                        .append("_")
-                        .append(columnName)
-                        .append(" FOREIGN KEY (")
-                        .append(field.getType().getSimpleName().toLowerCase() + "_id")
-                        .append(") REFERENCES public.").append( field.getType().getSimpleName().toLowerCase() +" (id) ")
-                        .append("ON UPDATE NO ACTION ")
-                        .append("ON DELETE NO ACTION");
+                // Foreign key handling moved to CompositionType check
             } else {
                 System.err.println("Unknown type for field " + columnName);
                 continue;
@@ -172,6 +215,11 @@ public class CreateTableAndEnum {
 
             if (i < fields.length - 1) {
                 query.append(", ");
+            }
+
+            // Append foreign key constraint
+            if (!foreignKeyConstraint.isEmpty()) {
+                keys.append(foreignKeyConstraint);
             }
         }
 
@@ -185,8 +233,10 @@ public class CreateTableAndEnum {
         }
 
         query.append(";");
+
         return query.toString();
     }
+
 
     private static boolean isForeignKey(String clazzName) {
         try {

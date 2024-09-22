@@ -22,7 +22,6 @@ public class PostgreSQLDatabase {
         connect();
     }
 
-
     public static synchronized PostgreSQLDatabase getInstance() {
         if (instance == null) {
             instance = new PostgreSQLDatabase();
@@ -30,11 +29,9 @@ public class PostgreSQLDatabase {
         return instance;
     }
 
-
     public Connection getConnection() {
         return connection;
     }
-
 
     private void connect() {
         try {
