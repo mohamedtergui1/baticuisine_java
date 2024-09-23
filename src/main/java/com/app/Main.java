@@ -17,11 +17,8 @@ import java.util.*;
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) {
-
-        ClientService clientService = DependencyInjector.createInstance(ClientService.class);
-        Client client = clientService.getClient(1);
-        client = clientService.updateClient(client);
-        System.out.println(client);
+        ProjectService projectService = DependencyInjector.createInstance(ProjectService.class);
+        List<Project> projects = projectService.getAllProject();
 
         while (true) {
             showMainMenu();
@@ -48,6 +45,7 @@ public class Main {
             }
         }
     }
+
     private static void showMainMenu() {
         System.out.println("=== Bienvenue dans l'application de gestion des projets de rénovation de cuisines ===");
         System.out.println("=== Menu Principal ===");
@@ -57,8 +55,6 @@ public class Main {
         System.out.println("4. Quitter");
         System.out.print("Choisissez une option : ");
     }
-
-
 
     private static void createNewProject() {
         System.out.println("Souhaitez-vous chercher un client existant ou en ajouter un nouveau ?");
@@ -77,7 +73,6 @@ public class Main {
                 case 2:
                     client = createNewUser();
             }
-
 
         createNewProject(client);
 
@@ -170,10 +165,41 @@ public class Main {
         project = DependencyInjector.createInstance(ProjectService.class).addProject(project);
         if( project != null) {
             System.out.println("Projet créé avec succès !");
-
+            createNewLabor(project);
         }
         else System.out.println("Project ne create pas");
     }
+
+    private static void createNewLabor(Project project) {
+        // Gather attributes for the Labor instance
+        System.out.print("--- Ajout de la main-d'œuvre ---\n");
+        System.out.print("Entrez le type de main-d'œuvre (e.g., Ouvrier de base, Spécialiste) : ");
+        String laborType = scanner.nextLine();
+
+        System.out.print("Entrez le taux horaire de cette main-d'œuvre (€/h) : ");
+        double hourlyRate = scanner.nextDouble();
+
+        System.out.print("Entrez le nombre d'heures travaillées : ");
+        double hoursWorked = scanner.nextDouble();
+
+        System.out.print("Entrez le facteur de productivité (1.0 = standard, > 1.0 = haute productivité) : ");
+        double workerProductivity = scanner.nextDouble();
+
+        // Create a new Labor instance
+        Labor labor = new Labor();
+        labor.setName(laborType);
+        labor.setHourlyRate(hourlyRate);
+        labor.setHoursWorked(hoursWorked);
+        labor.setWorkerProductivity(workerProductivity);
+        labor.setProject(project);
+
+        labor = DependencyInjector.createInstance(LaborService.class).addLabor(labor);
+        if( labor != null) {
+            System.out.println("Main-d'œuvre créée avec succès !");
+        }
+        else System.out.println("something is wrong during labor creation");
+    }
+
 
     private static void displayExistingProjects() {
         System.out.println("--- Affichage des projets existants ---");

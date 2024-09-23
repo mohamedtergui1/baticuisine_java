@@ -170,7 +170,7 @@ public abstract class Orm<T> {
     {
         String tableName = entityClass.getSimpleName().toLowerCase();
         String sql = generateSelectQuery(tableName, columnName);
-
+        System.out.println(sql);
         ArrayList<Object> results = new ArrayList<>();
         try (PreparedStatement pstmt = con.prepareStatement(sql)) {
 
@@ -227,7 +227,7 @@ public abstract class Orm<T> {
 
                                 if (actualTypeArguments.length > 0) {
                                     Class<?> listItemType = (Class<?>) actualTypeArguments[0];
-                                    List<Object> relatedEntities = allblock((Class<?>) listItemType, getEntityClass().getSimpleName().toLowerCase() + "_id", rs.getString("id"));
+                                    List<Object> relatedEntities = allblock((Class<?>) listItemType, entityClass.getSimpleName().toLowerCase() + "_id", rs.getString("id"));
                                     field.set(entity, relatedEntities);
                                 } else {
                                     System.err.println("List type has no parameterized type: " + field.getType());
@@ -309,7 +309,7 @@ public abstract class Orm<T> {
 
                                     if (actualTypeArguments.length > 0) {
                                         Class<?> listItemType = (Class<?>) actualTypeArguments[0];
-                                    List<Object> relatedEntities = allblock((Class<?>) listItemType, getEntityClass().getSimpleName() + "_id", rs.getString("id"));
+                                    List<Object> relatedEntities = allblock((Class<?>) listItemType, clazz.getSimpleName().toLowerCase() + "_id", rs.getString("id"));
                                         field.set(entity, relatedEntities);
                                     } else {
                                         System.err.println("List type has no parameterized type: " + field.getType());
