@@ -2,10 +2,7 @@ package main.java.com.app;
 
 
 
-import main.java.com.app.entities.Client;
-import main.java.com.app.entities.Labor;
-import main.java.com.app.entities.Material;
-import main.java.com.app.entities.Project;
+import main.java.com.app.entities.*;
 
 import main.java.com.app.repository.client.ClientRepositoryImpl;
 import main.java.com.app.repository.labor.LaborRepositoryImpl;
@@ -24,11 +21,14 @@ import java.util.*;
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) {
-        LaborService laborService = new LaborService(new LaborRepositoryImpl());
-        Labor labor = laborService.getLabor(1);
 
-        labor = laborService.updateLabor(labor);
-        System.out.println(labor);
+        List<Client> Clients = DependencyInjector.createInstance(ClientService.class).getAllClient();
+        for (Client client : Clients) {
+            for (Project project : client.project) {
+                System.out.println(project);
+            }
+        }
+
 
         while (true) {
             showMainMenu();
@@ -198,10 +198,20 @@ public class Main {
         displaALLProjects();
         System.out.print("Sélectionnez un projet parmi la liste des projets existants : ");
         int projectId = getUserChoice();
+        List<Labor> labors = DependencyInjector.createInstance(LaborService.class).getAllLabor();
+        double sum  = 0;
+        for (Labor l : labors) {
+            sum += calculateCostPlusTva(l);
+        }
+
         System.out.println("Calcul du coût en cours...");
-        System.out.println("Coût total calculé : 6000 €");
+        System.out.println("Coût total calculé : " + sum);
     }
 
+
+    public static double calculateCostPlusTva(Component component) {
+        return component.calculateCost() + component.calculateCost() * 0.01;
+    }
 
 
     private static int getUserChoice() {

@@ -23,7 +23,6 @@ public class Estimate implements GetId {
         return project;
     }
 
-
     public int getId() {
         return id;
     }

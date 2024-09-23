@@ -6,6 +6,8 @@ import main.myframework.annotation.StringMinLength;
 import main.myframework.interfaces.GetId;
 import main.myframework.annotation.StringMaxLength;
 
+import java.util.List;
+
 public class Client implements GetId {
 
     private int id;
@@ -23,6 +25,7 @@ public class Client implements GetId {
     private String phoneNumber;
     @DefaultValueBoolean(false)
     private boolean isProfessional;
+    public List<Project> project;
 
     @Override
     public int getId() {
