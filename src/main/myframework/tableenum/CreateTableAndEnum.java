@@ -12,10 +12,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Instant;
@@ -27,6 +24,7 @@ import main.myframework.annotation.StringMinLength;
 import main.myframework.annotation.Nullable;
 import main.myframework.annotation.DefaultValueBoolean;
 import main.myframework.annotation.CompositionType;
+import main.myframework.orm.ReflectionUtil;
 
 public class CreateTableAndEnum {
 
@@ -52,10 +50,13 @@ public class CreateTableAndEnum {
         StringBuilder query = new StringBuilder("CREATE TABLE ");
         query.append(clazz.getSimpleName().toLowerCase()).append(" (");
         StringBuilder keys = new StringBuilder();
-        Field[] fields = clazz.getDeclaredFields();
+        List<Field> fields = ReflectionUtil.getAllDeclaredFieldsSkipListAndSuperClass(clazz);
 
-        for (int i = 0; i < fields.length; i++) {
-            Field field = fields[i];
+        Boolean status = false;
+        for (Field field : fields) {
+            if(status)
+                query.append(", ");
+            status = true;
             String columnName = field.getName().toLowerCase();
             Class<?> fieldType = field.getType();
             String sqlType = sqlTypeMap.get(fieldType);
@@ -132,9 +133,8 @@ public class CreateTableAndEnum {
                 continue;
             }
 
-            if (i < fields.length - 1) {
-                query.append(", ");
-            }
+
+
         }
 
         query.append(keys.toString());

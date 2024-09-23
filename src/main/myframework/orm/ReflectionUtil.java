@@ -31,4 +31,40 @@ public class ReflectionUtil {
         return null;
     }
 
+    public static List<Field> getAllDeclaredFieldsSkipList(Class<?> clazz) {
+        List<Field> allFields = new ArrayList<>();
+
+        // Loop through the class hierarchy
+        while (clazz != null) {
+            Field[] fields = clazz.getDeclaredFields();
+            for (Field field : fields) {
+                // Check if the field's type is not a List
+                if (!List.class.isAssignableFrom(field.getType())) {
+                    allFields.add(field);
+                }
+            }
+            // Move to the superclass
+            clazz = clazz.getSuperclass();
+        }
+
+        return allFields;
+    }
+
+    public static List<Field> getAllDeclaredFieldsSkipListAndSuperClass(Class<?> clazz) {
+        List<Field> allFields = new ArrayList<>();
+
+
+            Field[] fields = clazz.getDeclaredFields();
+            for (Field field : fields) {
+                // Check if the field's type is not a List
+                if (!List.class.isAssignableFrom(field.getType())) {
+                    allFields.add(field);
+                }
+            }
+
+
+
+        return allFields;
+    }
+
 }

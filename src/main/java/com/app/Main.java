@@ -4,31 +4,24 @@ package main.java.com.app;
 
 import main.java.com.app.entities.*;
 
-import main.java.com.app.repository.client.ClientRepositoryImpl;
-import main.java.com.app.repository.labor.LaborRepositoryImpl;
+
 import main.java.com.app.service.ClientService;
 import main.java.com.app.service.LaborService;
-import main.java.com.app.service.MaterialService;
+
 import main.java.com.app.service.ProjectService;
 import main.myframework.injector.DependencyInjector;
-import main.myframework.orm.ReflectionUtil;
 
 
-import java.lang.reflect.Field;
-import java.sql.SQLException;
 import java.util.*;
 
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) {
 
-        List<Client> Clients = DependencyInjector.createInstance(ClientService.class).getAllClient();
-        for (Client client : Clients) {
-            for (Project project : client.project) {
-                System.out.println(project);
-            }
-        }
-
+        ClientService clientService = DependencyInjector.createInstance(ClientService.class);
+        Client client = clientService.getClient(1);
+        client = clientService.updateClient(client);
+        System.out.println(client);
 
         while (true) {
             showMainMenu();

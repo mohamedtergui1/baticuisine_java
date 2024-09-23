@@ -25,7 +25,15 @@ public class Client implements GetId {
     private String phoneNumber;
     @DefaultValueBoolean(false)
     private boolean isProfessional;
-    public List<Project> project;
+    private List<Project> projects;
+
+    public List<Project> getProjects() {
+        return projects;
+    }
+
+    public void setProjects(List<Project> projects) {
+        this.projects = projects;
+    }
 
     @Override
     public int getId() {

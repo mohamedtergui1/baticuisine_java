@@ -41,7 +41,7 @@ public abstract class Orm<T> {
 
         try (PreparedStatement pstmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             int parameterIndex = 1;
-            for (Field field : ReflectionUtil.getAllDeclaredFields(getEntityClass())) {
+            for (Field field : ReflectionUtil.getAllDeclaredFieldsSkipList(getEntityClass())) {
                 field.setAccessible(true);
                 Object value = field.get(obj);
 
@@ -90,7 +90,7 @@ public abstract class Orm<T> {
 
         try (PreparedStatement pstmt = con.prepareStatement(sql)) {
             int parameterIndex = 1;
-            List<Field> fields = ReflectionUtil.getAllDeclaredFields(getEntityClass());
+            List<Field> fields = ReflectionUtil.getAllDeclaredFieldsSkipList(getEntityClass());
             for (Field field : fields) {
                 field.setAccessible(true);
                 Object value = field.get(obj);
@@ -215,6 +215,7 @@ public abstract class Orm<T> {
                     T entity = entityClass.getDeclaredConstructor().newInstance();
 
                     for (Field field : ReflectionUtil.getAllDeclaredFields(entityClass)) {
+                        field.setAccessible(true);
                         if (List.class.isAssignableFrom(field.getType())) {
                             // Handle list of related entities
                             Type genericType = field.getGenericType();
@@ -295,7 +296,7 @@ public abstract class Orm<T> {
 
                         // Populate the instance with data from the result set
                         for (Field field : fields) {
-                            field.setAccessible(true); // Make private fields accessible
+                            field.setAccessible(true);
 
                             if (List.class.isAssignableFrom(field.getType())) {
                                 // Handle list of related entities
@@ -419,7 +420,7 @@ public abstract class Orm<T> {
 
 
     private void fetchBlock(ResultSet rs, Object entity, Field field) throws SQLException {
-        System.err.println("its work");
+
         field.setAccessible(true);
         String fieldName = field.getName();
         String fieldType = field.getType().getName();
@@ -589,7 +590,7 @@ public abstract class Orm<T> {
         StringBuilder sql = new StringBuilder("INSERT INTO ").append(tableName).append(" (");
         StringBuilder values = new StringBuilder(" VALUES (");
 
-        List<Field> fields = ReflectionUtil.getAllDeclaredFields(getEntityClass());;
+        List<Field> fields = ReflectionUtil.getAllDeclaredFieldsSkipList(getEntityClass());;
         boolean firstField = true;
 
         for (Field field : fields) {
@@ -646,7 +647,7 @@ public abstract class Orm<T> {
 
     private String generateUpdateSQL(String tableName, T obj) {
         StringBuilder sql = new StringBuilder("UPDATE ").append(tableName).append(" SET  ");
-        List<Field> fields = ReflectionUtil.getAllDeclaredFields(getEntityClass());
+        List<Field> fields = ReflectionUtil.getAllDeclaredFieldsSkipList(getEntityClass());
         boolean firstField = true;
 
         for (Field field : fields) {
