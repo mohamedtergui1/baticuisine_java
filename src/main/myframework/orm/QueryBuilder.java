@@ -122,7 +122,7 @@ public class QueryBuilder<T> {
     private T mapRow(ResultSet rs) throws SQLException {
         try {
             T instance = (T) clazz.getDeclaredConstructor().newInstance();
-            for (Field field : clazz.getDeclaredFields()) {
+            for (Field field :ReflectionUtil.getAllDeclaredFieldsSkipList(clazz)) {
                 field.setAccessible(true); // Allow access to private fields
                 Object value = rs.getObject(field.getName()); // Get value from ResultSet
                 field.set(instance, value); // Set value to the instance

@@ -16,10 +16,10 @@ public class MigrationController {
             Set<Class<?>> entities =  FilesLoader.getEntities();
             List<Class<?>> entityList = new ArrayList<>(entities);
 
-//            Collections.reverse(entityList);
-//            for (Class<?> clazz : entityList ){
-//                CreateTableAndEnum.dropTable(clazz,connection);
-//            }
+            Collections.reverse(entityList);
+            for (Class<?> clazz : entityList ){
+                CreateTableAndEnum.dropTable(clazz,connection);
+            }
 
 
             for (Class<?> clazz : FilesLoader.getEnums()) {

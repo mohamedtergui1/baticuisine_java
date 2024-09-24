@@ -1,10 +1,14 @@
 package main.java.com.app.service;
+import main.java.com.app.entities.Labor;
+import main.java.com.app.entities.Material;
 import main.myframework.annotation.InjectClass;
 
 import main.java.com.app.entities.Project;
 import main.java.com.app.repository.project.ProjectRepository;
 
 import main.java.com.app.repository.project.ProjectRepositoryImpl;
+import main.myframework.injector.DependencyInjector;
+
 import java.util.List;
 
 public class ProjectService {
@@ -29,5 +33,22 @@ public class ProjectService {
     public Project addProject(Project project){
         return projectRepository.insert(project);
     }
-
+    public Project calculProjectCost(Project project, double tva, double mb){
+        project.getLabors().forEach((e)->{
+            e.setVatRate(tva);
+            e.setProject(project);
+            DependencyInjector.createInstance(LaborService.class).updateLabor(e);
+        });
+        project.getMaterials().forEach((e)->{
+            e.setVatRate(tva);
+            e.setProject(project);
+            DependencyInjector.createInstance(MaterialService.class).updateMaterial(e);
+        });
+        project.setTotalCost(project.getLabors().stream()
+                .map(Labor::calculateCost)
+                .reduce(0.0, Double::sum)  + project.getMaterials().stream().map(Material::calculateCost).reduce(0.0, Double::sum));
+        project.setProfitMargin(project.getTotalCost() + project.getTotalCost() * mb);
+        projectRepository.update(project);
+        return project;
+    }
 }

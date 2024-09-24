@@ -7,6 +7,8 @@ import main.myframework.annotation.Nullable;
 import main.myframework.enums.CascadeType;
 import main.myframework.interfaces.GetId;
 
+import java.util.List;
+
 public class Project  implements GetId {
 
     private int id;
@@ -18,6 +20,24 @@ public class Project  implements GetId {
     private Status projectStatus;
     @CompositionType(cascade = CascadeType.CASCADE)
     private Client client;
+    private List<Material> materials;
+    private List<Labor> labors;
+
+    public List<Labor> getLabors() {
+        return labors;
+    }
+
+    public void setLabors(List<Labor> labors) {
+        this.labors = labors;
+    }
+
+    public void setMaterials(List<Material> materials) {
+        this.materials = materials;
+    }
+
+    public List<Material> getMaterials() {
+        return materials;
+    }
 
     public Client getClient() {
         return client;

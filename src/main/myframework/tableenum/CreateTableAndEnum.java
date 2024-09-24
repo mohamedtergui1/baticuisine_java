@@ -176,6 +176,9 @@ public class CreateTableAndEnum {
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute(createTableQuery);
                 System.out.println("Table created successfully for " + clazz.getSimpleName());
+                if (clazz.isInterface() || java.lang.reflect.Modifier.isAbstract(clazz.getModifiers())) {
+                    return true;
+                }
                 CreateRepositoryAndService.createRepositoryInterface(clazz);
                 return true;
             } catch (SQLException e) {

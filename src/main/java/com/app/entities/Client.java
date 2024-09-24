@@ -28,10 +28,14 @@ public class Client implements GetId {
     private List<Project> projects;
 
     public List<Project> getProjects() {
-        return projects;
+         projects.stream().forEach((e) -> {
+                e.setClient(this);
+         });
+         return projects;
     }
 
     public void setProjects(List<Project> projects) {
+
         this.projects = projects;
     }
 

@@ -4,6 +4,7 @@ import main.myframework.database.PostgreSQLDatabase;
 import main.myframework.interfaces.GetId;
 
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.sql.*;
@@ -14,10 +15,12 @@ public abstract class Orm<T> {
     QueryBuilder queryBuilder;
 
     private final Connection con;
+
     protected Orm() {
         this.con = PostgreSQLDatabase.getInstance().getConnection();
         queryBuilder = new QueryBuilder<>(this.con,getEntityClass());
     }
+
     static final Set<String> ALLOWED_TYPES = new HashSet<>(Arrays.asList("int","boolean" , "float", "java.lang.String", "char", "long", "double", "java.sql.Date"));
 
     protected abstract Class<T> getEntityClass();
@@ -128,8 +131,6 @@ public abstract class Orm<T> {
         }
     }
 
-
-
     public boolean delete(T obj) {
         if (obj == null) {
             throw new IllegalArgumentException("Object cannot be null");
@@ -161,8 +162,6 @@ public abstract class Orm<T> {
         }
     }
 
-
-
     public ArrayList<T> all() {
         return all(getEntityClass(), null, null);
     }
@@ -185,7 +184,30 @@ public abstract class Orm<T> {
 
                     for (Field field :  ReflectionUtil.getAllDeclaredFields(entityClass)) {
                         field.setAccessible(true);
-                        fetchBlock(rs, entity, field);
+                        if (!List.class.isAssignableFrom(field.getType())) {
+
+                            fetchBlock(rs, entity, field);
+                        }
+                        else {
+                            Type genericType = field.getGenericType();
+
+                            // Check if the field is a parameterized type
+                            if (genericType instanceof ParameterizedType) {
+                                ParameterizedType parameterizedType = (ParameterizedType) genericType;
+                                Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+
+                                if (actualTypeArguments.length > 0) {
+                                    Class<?> listItemType = (Class<?>) actualTypeArguments[0];
+                                    List<Object> relatedEntities = allblock((Class<?>) listItemType, entityClass.getSimpleName().toLowerCase() + "_id", rs.getString("id"));
+                                    field.set(entity, relatedEntities);
+                                } else {
+                                    System.err.println("List type has no parameterized type: " + field.getType());
+                                }
+                            } else {
+                                System.err.println("Field is not a parameterized type: " + field.getGenericType());
+                            }
+                        }
+//
                     }
 
                     results.add(entity);
@@ -253,8 +275,6 @@ public abstract class Orm<T> {
 
         return results;
     }
-
-
 
     private String getColumnNameForField(Field field) {
         // Adjust this logic based on your naming conventions
@@ -334,7 +354,6 @@ public abstract class Orm<T> {
         }
     }
 
-
     private void fetch(ResultSet rs, Object entity, Field field) throws SQLException {
         field.setAccessible(true);
         String fieldName = field.getName();
@@ -411,13 +430,10 @@ public abstract class Orm<T> {
         }
     }
 
-
     private void logError(String fieldName, Exception e) {
         // Use a logging framework here, like log4j or SLF4J
         System.err.println("Error setting field value: " + fieldName + " - " + e.getMessage());
     }
-
-
 
     private void fetchBlock(ResultSet rs, Object entity, Field field) throws SQLException {
 
@@ -470,7 +486,20 @@ public abstract class Orm<T> {
                         field.set(entity, columnValue != null ? new java.sql.Date(((java.sql.Date) columnValue).getTime()) : null);
                         break;
                     default:
-                        field.set(entity, null);
+                        if (GetId.class.isAssignableFrom(field.getType())) {
+                            try {
+
+                                GetId instance = (GetId) field.getType().getDeclaredConstructor().newInstance();
+                                instance.setId(Integer.parseInt(columnValue.toString()));
+                                field.set(entity, instance);
+                            } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
+                                     InvocationTargetException e) {
+
+                                System.err.println("Error creating instance of GetId: " + e.getMessage());
+                            }
+                        }
+
+
 
                         break;
                 }
