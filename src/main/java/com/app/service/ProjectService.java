@@ -47,7 +47,8 @@ public class ProjectService {
         project.setTotalCost(project.getLabors().stream()
                 .map(Labor::calculateCost)
                 .reduce(0.0, Double::sum)  + project.getMaterials().stream().map(Material::calculateCost).reduce(0.0, Double::sum));
-        project.setProfitMargin(project.getTotalCost() + project.getTotalCost() * mb);
+        project.setTotalCost(project.getTotalCost());
+        project.setProfitMargin(mb);
         projectRepository.update(project);
         return project;
     }

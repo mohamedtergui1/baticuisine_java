@@ -40,7 +40,7 @@ public abstract class Orm<T> {
         }
         String tableName = getEntityClass().getSimpleName().toLowerCase();
         String sql = generateInsertSQL(tableName, obj);
-        System.out.println(sql);
+
 
         try (PreparedStatement pstmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             int parameterIndex = 1;
@@ -89,7 +89,7 @@ public abstract class Orm<T> {
         }
         String tableName = getEntityClass().getSimpleName().toLowerCase();
         String sql = generateUpdateSQL(tableName, obj);
-        System.out.println("Generated SQL for update: " + sql);
+
 
         try (PreparedStatement pstmt = con.prepareStatement(sql)) {
             int parameterIndex = 1;
@@ -123,7 +123,7 @@ public abstract class Orm<T> {
             if (idValue == null) {
                 throw new IllegalArgumentException("Object must have a non-null 'id' field for update.");
             }
-            System.out.println("id " + idValue);
+
             pstmt.setObject(parameterIndex, idValue);
 
             int rowsAffected = pstmt.executeUpdate();
@@ -141,7 +141,6 @@ public abstract class Orm<T> {
 
         String tableName = getEntityClass().getSimpleName().toLowerCase();
         String sql = generateDeleteSQL(tableName, obj);
-        System.out.println(sql);
 
         try (PreparedStatement pstmt = con.prepareStatement(sql)) {
             Field[] fields = getEntityClass().getDeclaredFields();
@@ -172,7 +171,7 @@ public abstract class Orm<T> {
     {
         String tableName = entityClass.getSimpleName().toLowerCase();
         String sql = generateSelectQuery(tableName, columnName);
-        System.out.println(sql);
+
         ArrayList<Object> results = new ArrayList<>();
         try (PreparedStatement pstmt = con.prepareStatement(sql)) {
 
@@ -181,7 +180,7 @@ public abstract class Orm<T> {
 
 
             try (ResultSet rs = pstmt.executeQuery()) {
-                System.out.println(value);
+
                 while (rs.next()) {
                     Object entity = entityClass.getDeclaredConstructor().newInstance();
 
@@ -228,7 +227,7 @@ public abstract class Orm<T> {
         String sql = generateSelectQuery(tableName, columnName);
         ArrayList<T> results = new ArrayList<>();
 
-        System.out.println(sql);
+
 
         try (PreparedStatement pstmt = con.prepareStatement(sql)) {
             if (value != null) {
@@ -302,7 +301,7 @@ public abstract class Orm<T> {
             Class<?> clazz = Class.forName(className);
             String tableName = clazz.getSimpleName().toLowerCase(); // Use class name as table name
             String sql = generateSelectQuery(tableName, "id");
-            System.out.println(sql);
+
 
             // Prepare the statement
             try (PreparedStatement pstmt = con.prepareStatement(sql)) {
@@ -573,7 +572,7 @@ public abstract class Orm<T> {
                 }
             }
         }
-        System.out.println(queryBuilder.toString());
+
         return queryBuilder.toString();
     }
 

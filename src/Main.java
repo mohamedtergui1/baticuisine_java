@@ -1,12 +1,14 @@
 import main.java.com.app.entities.*;
 
-import main.java.com.app.service.ClientService;
-import main.java.com.app.service.LaborService;
+import main.java.com.app.enums.Status;
+import main.java.com.app.service.*;
 
-import main.java.com.app.service.MaterialService;
-import main.java.com.app.service.ProjectService;
+import main.java.com.app.utils.ValidationUtils;
 import main.myframework.injector.DependencyInjector;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 public class Main {
@@ -27,6 +29,7 @@ public class Main {
 //        }
 
 //        Project project = DependencyInjector.createInstance(ProjectService.class).getProject(1);
+//        displayProjectDetails(project);
 //        System.out.println(project);
 //        Project client = DependencyInjector.createInstance(ProjectService.class).updateProject(project);
 
@@ -42,7 +45,7 @@ public class Main {
                     displayExistingProjects();
                     break;
                 case 3:
-                    //calculateProjectCost();
+                    calculateProjectCost();
                     break;
                 case 4:
                     System.out.println("Quitting the application...");
@@ -190,6 +193,7 @@ public class Main {
         }while(choice != 3);
         calculateProjectCost(project.getId());
     }
+
     public static void createNewMaterial(Project project) {
             Material material = new Material();
             System.out.print("--- Ajouter des matériaux ---\n");
@@ -201,14 +205,17 @@ public class Main {
             material.setUnitCost(scanner.nextDouble());
             System.out.print("Entrez le coût de transport de ce matériau (€) : ");
             material.setTransportCost(scanner.nextDouble());
+            System.out.print("Entrez coefficient qualite de ce matériau (€) : ");
+            material.setTransportCost(scanner.nextDouble());
             scanner.nextLine();
             material.setProject(project);
             material = DependencyInjector.createInstance(MaterialService.class).addMaterial(material);
-            if(material == null){
+            if(material != null){
                 System.out.println("material ajouter avec success");
             }
             else System.out.println("somthing is wrong try again");
     }
+
     private static void createNewLabor(Project project) {
         Labor labor = new Labor();
         System.out.print("--- Ajout de la main-d'œuvre ---\n");
@@ -232,16 +239,130 @@ public class Main {
         else System.out.println("something is wrong during labor creation");
     }
 
+    private static void calculateProjectCost(){
+        System.out.println("calcule codt");
+        displayALLProjects();
+        System.out.println("choisi un project");
+        int choice =  scanner.nextInt();
+        scanner.nextLine();
+        calculateProjectCost(choice);
+    }
+
     private static void displayExistingProjects() {
         System.out.println("--- Affichage des projets existants ---");
         System.out.println("Liste des projets : ");
         displayALLProjects();
+
+        Project project;
+        int choice;
+
+        // Loop to select a valid project
+        do {
+            System.out.print("Sélectionnez un projet : ");
+            choice = scanner.nextInt();
+            scanner.nextLine(); // Clear the buffer
+            project = DependencyInjector.createInstance(ProjectService.class).getProject(choice);
+        } while (project == null);
+        System.out.println("\n\nroject tu a selection");
+        project.showAsMenu();
+        System.out.println("1 - Rédiger un devis");
+        System.out.println("2 - Changer le statut du projet");
+        System.out.print("entrer votre chois :");
+
+        int choice1 = scanner.nextInt();
+        scanner.nextLine();
+
+        switch (choice1) {
+            case 1:
+                addDevi(project);
+                break;
+            case 2:
+                changeStatusProject(project);
+                break;
+            default:
+                System.out.println("Choix invalide. Veuillez réessayer.");
+                break;
+        }
+    }
+
+    private static void changeStatusProject(Project project) {
+        ProjectService projectService = DependencyInjector.createInstance(ProjectService.class);
+
+        // Display the status change menu
+        System.out.println("--- Changer le statut du projet ---");
+        System.out.println("1 - Changer le statut en : Complété");
+        System.out.println("2 - Changer le statut en : Annulé");
+        System.out.print("Veuillez entrer votre choix : ");
+
+        int choice = scanner.nextInt();
+        scanner.nextLine(); // Clear the buffer
+
+        // Process the user's choice
+        switch (choice) {
+            case 1:
+                project.setProjectStatus(Status.COMPLETED);
+                projectService.updateProject(project);
+                System.out.println("Succès : Le statut du projet a été changé en 'Complété'.");
+                break;
+            case 2:
+                project.setProjectStatus(Status.CANCELLED);
+                projectService.updateProject(project);
+                System.out.println("Succès : Le statut du projet a été changé en 'Annulé'.");
+                break;
+            default:
+                System.out.println("Erreur : Choix invalide. Veuillez réessayer.");
+                break;
+        }
+    }
+
+    private static void addDevi(Project project) {
+        Estimate estimate = new Estimate();
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+
+
+        while (estimate.getIssueDate() == null) {
+            System.out.print("Entrez la date d'émission du devis (format : jj/mm/aaaa) : ");
+            String inputDate = scanner.nextLine();
+
+            try {
+                LocalDate issueDate = LocalDate.parse(inputDate, dateFormatter);
+                estimate.setIssueDate(issueDate);
+            } catch (DateTimeParseException e) {
+                System.out.println("Date invalide. Veuillez entrer une date au format jj/mm/aaaa.");
+            }
+        }
+
+
+        while (estimate.getValidityDate() == null) {
+            System.out.print("Entrez la date de validité du devis (format : jj/mm/aaaa) : ");
+            String inputDate = scanner.nextLine();
+
+            try {
+                LocalDate validityDate = LocalDate.parse(inputDate, dateFormatter);
+                estimate.setValidityDate(validityDate);
+            } catch (DateTimeParseException e) {
+                System.out.println("Date invalide. Veuillez entrer une date au format jj/mm/aaaa.");
+            }
+        }
+
+
+        ValidationUtils validationUtils = new ValidationUtils();
+        if (validationUtils.isValidEstimate(estimate)) {
+            if (DependencyInjector.createInstance(EstimateService.class).addEstimate(estimate) != null) {
+                System.out.println("Devis ajouté avec succès.");
+            } else {
+                System.out.println("Something went wrong during estimation.");
+            }
+        } else {
+            System.out.println("Le devis n'est pas valide. Veuillez vérifier les dates et le montant estimé.");
+        }
     }
 
     private static void displayALLProjects() {
         List<Project> projects  = DependencyInjector.createInstance(ProjectService.class).getAllProject();
         for (Project project : projects) {
-            System.out.println(project);
+            project.showAsMenu();
         }
     }
 
@@ -250,7 +371,10 @@ public class Main {
 
         ProjectService projectService = DependencyInjector.createInstance(ProjectService.class);
         Project project = projectService.getProject(projectId);
-
+        if(project == null){
+            System.out.println("Le projet n'existe pas");
+            main(null);
+        }
 
         System.out.print("Souhaitez-vous appliquer une TVA au projet ? (y/n) : ");
         String tvaResponse = scanner.next();
@@ -281,7 +405,7 @@ public class Main {
             double materialCost = material.calculateCost();
             totalMaterialsCost += materialCost;
             double materialCostWithTva = materialCost * (1 + material.getVatRate());
-            totalMaterialsCostWithTva += materialCostWithTva;
+            totalMaterialsCostWithTva += materialCostWithTva * (1 + material.getVatRate() );
 
             System.out.printf("- %s : %.2f € (quantité : %.2f %s, coût unitaire : %.2f €/m², qualité : %.2f, transport : %.2f €)%n",
                     material.getName(), materialCost, material.getQuantity(), material.getUnitCost(),
@@ -306,7 +430,7 @@ public class Main {
         System.out.printf("**Coût total de la main-d'œuvre avec TVA (20%%) : %.2f €**%n", laborCostWithVAT);
 
         double totalCostBeforeMargin = totalMaterialsCost + totalLaborCost;
-        double margin = totalCostBeforeMargin * project.getProfitMargin(); // Using dynamic margin
+        double margin = totalCostBeforeMargin * (1 + project.getProfitMargin());
         double finalTotalCost = totalCostBeforeMargin + margin;
 
         System.out.printf("3. Coût total avant marge : %.2f €%n", totalCostBeforeMargin);
@@ -314,15 +438,12 @@ public class Main {
         System.out.printf("**Coût total final du projet : %.2f €**%n", finalTotalCost);
     }
 
-
-
     private static double getInputDouble(String prompt) {
         System.out.print(prompt);
         while (scanner.hasNextDouble())
             return scanner.nextDouble();
         return 0;
     }
-
 
     public static double calculateCostPlusTva(Component component,double tva) {
         return component.calculateCost() + component.calculateCost() * tva;

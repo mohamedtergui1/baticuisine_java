@@ -64,7 +64,6 @@ public class Project  implements GetId {
         this.id = id;
     }
 
-    // Getters and Setters
     public String getProjectName() { return projectName; }
     public void setProjectName(String projectName) { this.projectName = projectName; }
 
@@ -78,7 +77,7 @@ public class Project  implements GetId {
     public void setProjectStatus(Status projectStatus) { this.projectStatus = projectStatus; }
 
     public String toString() {
-        // Convert client object to JSON string if it's not null
+
         String clientJson = (client != null) ? client.toString() : "null";
 
         return String.format(
@@ -91,4 +90,24 @@ public class Project  implements GetId {
                 clientJson
         );
     }
+    public void showAsMenu() {
+
+        System.out.println("-------------");
+        System.out.printf("ID: %d%n", id);
+        System.out.printf("Project Name: %s%n", projectName != null ? projectName : "Not specified");
+        System.out.printf("Profit Margin: %.2f%%%n", profitMargin);
+        System.out.printf("Total Cost: %.2f%n", totalCost >= 0 ? totalCost : 0);
+        System.out.printf("Project Status: %s%n", projectStatus != null ? projectStatus.name() : "Not specified");
+        System.out.printf("Surface Area: %.2f%n", surfaceArea);
+
+        if (client != null) {
+            System.out.print("Client Information:");
+            System.out.println(client.toString());
+        } else {
+            System.out.println("Client: Not assigned");
+        }
+
+        System.out.println("-------------");
+    }
+
 }

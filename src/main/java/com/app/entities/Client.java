@@ -70,6 +70,17 @@ public class Client implements GetId {
                 isProfessional
         );
     }
+    public void showAsMenu() {
+        System.out.println("Client Menu:");
+        System.out.println("------------");
+        System.out.printf("ID: %d%n", id);
+        System.out.printf("Name: %s%n", name != null ? name : "Not specified");
+        System.out.printf("Address: %s%n", address != null ? address : "Not specified");
+        System.out.printf("Phone Number: %s%n", phoneNumber != null ? phoneNumber : "Not specified");
+        System.out.printf("Professional: %s%n", isProfessional ? "Yes" : "No");
+        System.out.println("------------");
+    }
+
 
 }
 
