@@ -100,6 +100,9 @@ public abstract class Orm<T> {
 
 
                     String typeName = field.getType().getName();
+                    if(field.getType().isEnum()){
+                        pstmt.setObject(parameterIndex++,  value,Types.OTHER);
+                    }else
                     if (ALLOWED_TYPES.contains(typeName)) {
                         if (value instanceof java.sql.Date) {
                             pstmt.setDate(parameterIndex++, (java.sql.Date) value);
@@ -499,8 +502,6 @@ public abstract class Orm<T> {
                             }
                         }
 
-
-
                         break;
                 }
             }
@@ -690,7 +691,10 @@ public abstract class Orm<T> {
                     }
                     if (ALLOWED_TYPES.contains(field.getType().getName()))
                         sql.append(field.getName()).append(" = ?");
-                    else
+                    else if(field.getType().isEnum()){
+                        sql.append(field.getName()).append(" = ?");
+
+                    }else
                         sql.append(field.getName().toLowerCase()).append("_id").append(" = ?");
                     firstField = false;
                 }

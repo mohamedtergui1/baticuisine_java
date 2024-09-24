@@ -15,8 +15,18 @@ public class Main {
     private static final Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) {
 
-        DependencyInjector.createInstance(ClientService.class).getAllClient();
-
+  //      Client client =  DependencyInjector.createInstance(ClientService.class).getClient(2);
+        Project project =DependencyInjector.createInstance(ProjectService.class).getProject(3);
+        DependencyInjector.createInstance(ProjectService.class).updateProject(project);
+//        for(Project project : client.getProjects()){
+//            System.out.println(project);
+//            for(Labor labor : project.getLabors()){
+//                System.out.println(labor);
+//            }
+//            for(Material material : project.getMaterials()){
+//                System.out.println(material);
+//            }
+//        }
 
         while (true) {
             showMainMenu();
