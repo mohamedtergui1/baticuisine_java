@@ -18,6 +18,7 @@ public class Project  implements GetId {
     private double totalCost;
     @DefaultValueString(value = "IN_PROGRESS")
     private Status projectStatus;
+    private double surfaceArea;
     @CompositionType(cascade = CascadeType.CASCADE)
     private Client client;
     private List<Material> materials;
@@ -33,6 +34,14 @@ public class Project  implements GetId {
 
     public void setMaterials(List<Material> materials) {
         this.materials = materials;
+    }
+
+    public void setSurfaceArea(double surfaceArea) {
+        this.surfaceArea = surfaceArea;
+    }
+
+    public double getSurfaceArea() {
+        return surfaceArea;
     }
 
     public List<Material> getMaterials() {

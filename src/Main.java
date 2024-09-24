@@ -1,5 +1,3 @@
-package main.java.com.app;
-
 import main.java.com.app.entities.*;
 
 import main.java.com.app.service.ClientService;
@@ -15,9 +13,9 @@ public class Main {
     private static final Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) {
 
-  //      Client client =  DependencyInjector.createInstance(ClientService.class).getClient(2);
-        Project project =DependencyInjector.createInstance(ProjectService.class).getProject(3);
-        DependencyInjector.createInstance(ProjectService.class).updateProject(project);
+       //Client client =  DependencyInjector.createInstance(ClientService.class).getClient(2);
+//        Project project =DependencyInjector.createInstance(ProjectService.class).getProject(3);
+//        DependencyInjector.createInstance(ProjectService.class).updateProject(project);
 //        for(Project project : client.getProjects()){
 //            System.out.println(project);
 //            for(Labor labor : project.getLabors()){
@@ -27,6 +25,10 @@ public class Main {
 //                System.out.println(material);
 //            }
 //        }
+
+//        Project project = DependencyInjector.createInstance(ProjectService.class).getProject(1);
+//        System.out.println(project);
+//        Project client = DependencyInjector.createInstance(ProjectService.class).updateProject(project);
 
         while (true) {
             showMainMenu();
@@ -165,11 +167,10 @@ public class Main {
         System.out.print("Entrez la surface de la cuisine (en m²) : ");
         double surface = scanner.nextDouble();
         scanner.nextLine();
-        project.setProfitMargin(surface);
+        project.setSurfaceArea(surface);
         project = DependencyInjector.createInstance(ProjectService.class).addProject(project);
         if( project != null) {
             System.out.println("Projet créé avec succès !");
-            createNewLabor(project);
         }
         else System.out.println("Project ne create pas");
         int choice;
@@ -178,7 +179,8 @@ public class Main {
             System.out.println("2 : ajouter main d ouvre");
             System.out.println("3 : quitter ");
             System.out.print("Choisissez une option : ");
-            choice = getUserChoice();
+            choice = scanner.nextInt();
+            scanner.nextLine();
             if(choice == 1) {
                 createNewMaterial(project);
             }
@@ -199,6 +201,7 @@ public class Main {
             material.setUnitCost(scanner.nextDouble());
             System.out.print("Entrez le coût de transport de ce matériau (€) : ");
             material.setTransportCost(scanner.nextDouble());
+            scanner.nextLine();
             material.setProject(project);
             material = DependencyInjector.createInstance(MaterialService.class).addMaterial(material);
             if(material == null){
@@ -261,9 +264,10 @@ public class Main {
         System.out.println("Calcul du coût en cours...");
         project = projectService.calculProjectCost(project, tva, mB);
         System.out.println("Coût total calculé : " + project.getTotalCost());
+        displayProjectDetails(project);
     }
 
-    private void displayProjectDetails(Project project) {
+    private static void displayProjectDetails(Project project) {
         System.out.println("Nom du projet : " + project.getProjectName());
         System.out.println("Client : " + project.getClient().getName());
         System.out.println("Adresse du chantier : " + project.getClient().getAddress());

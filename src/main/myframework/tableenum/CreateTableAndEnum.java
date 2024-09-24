@@ -2,7 +2,7 @@ package main.myframework.tableenum;
 
 import main.myframework.enums.CascadeType;
 import main.myframework.interfaces.GetId;
-import main.myframework.checkextends.CheckExtends;
+
 import main.myframework.createrepositoryandservice.CreateRepositoryAndService;
 import main.myframework.filesloader.FilesLoader;
 
@@ -139,9 +139,9 @@ public class CreateTableAndEnum {
 
         query.append(keys.toString());
 
-        // Handle inheritance
-        Class<?> parentClass = CheckExtends.check(FilesLoader.getEntities(), clazz);
-        if (parentClass != null) {
+
+        Class<?> parentClass = clazz.getSuperclass();
+        if (parentClass != null && parentClass != Object.class) {
             query.append(") INHERITS (").append(parentClass.getSimpleName().toLowerCase()).append(")");
         } else {
             query.append(")");
