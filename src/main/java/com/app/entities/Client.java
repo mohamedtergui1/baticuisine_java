@@ -71,7 +71,7 @@ public class Client implements GetId {
         );
     }
     public void showAsMenu() {
-        System.out.println("Client Menu:");
+
         System.out.println("------------");
         System.out.printf("ID: %d%n", id);
         System.out.printf("Name: %s%n", name != null ? name : "Not specified");

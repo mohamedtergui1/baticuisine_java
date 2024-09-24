@@ -50,7 +50,7 @@ public class QueryBuilder<T> {
 
     public List<T> fetchAll(Class<T> clazz) {
         List<T> results = new ArrayList<>();
-        System.out.println(query.toString());
+
 
         try (PreparedStatement pstmt = con.prepareStatement(this.query.toString())) {
             AtomicInteger index = new AtomicInteger(1);

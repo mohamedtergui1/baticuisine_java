@@ -144,7 +144,7 @@ public class Main {
             String line = scanner.nextLine();
             List<Client> clients = DependencyInjector.createInstance(ClientService.class).SearchByName(line);
             for (Client c : clients) {
-                System.out.println(c);
+                c.showAsMenu();
             }
             System.out.print("veullez choisir un client:");
             int choice = getUserChoice();
@@ -154,7 +154,7 @@ public class Main {
                     scanner.nextLine();
 
                     client  = DependencyInjector.createInstance(ClientService.class).getClient(choice);
-                    System.out.println(client);
+
                 }
                 return client;
     }
@@ -162,6 +162,7 @@ public class Main {
     private static void createNewProject(Client client) {
         Project project = new Project();
         System.out.println("client qui vous avez selection");
+        client.showAsMenu();
         project.setClient(client);
 
         System.out.print("Entrez le nom du projet : ");
@@ -195,48 +196,110 @@ public class Main {
     }
 
     public static void createNewMaterial(Project project) {
-            Material material = new Material();
-            System.out.print("--- Ajouter des matériaux ---\n");
-            System.out.print("Entrez le nom du matériau : ");
-            material.setName(scanner.nextLine());
-            System.out.print("Entrez la quantité de ce matériau (en m²) : ");
-            material.setQuantity(scanner.nextDouble());
-            System.out.print("Entrez le coût unitaire de ce matériau (€/m²) : ");
-            material.setUnitCost(scanner.nextDouble());
-            System.out.print("Entrez le coût de transport de ce matériau (€) : ");
-            material.setTransportCost(scanner.nextDouble());
-            System.out.print("Entrez coefficient qualite de ce matériau (€) : ");
-            material.setTransportCost(scanner.nextDouble());
-            scanner.nextLine();
-            material.setProject(project);
-            material = DependencyInjector.createInstance(MaterialService.class).addMaterial(material);
-            if(material != null){
-                System.out.println("material ajouter avec success");
-            }
-            else System.out.println("somthing is wrong try again");
+        Material material = new Material();
+        System.out.print("--- Ajouter des matériaux ---\n");
+
+        // Name
+        System.out.print("Entrez le nom du matériau : ");
+        material.setName(scanner.nextLine().trim());
+        if (material.getName().isEmpty()) {
+            System.out.println("Le nom du matériau ne peut pas être vide.");
+            return;
+        }
+
+        // Quantity
+        System.out.print("Entrez la quantité de ce matériau (en m²) : ");
+        double quantity = scanner.nextDouble();
+        if (quantity <= 0) {
+            System.out.println("La quantité doit être supérieure à 0.");
+            return;
+        }
+        material.setQuantity(quantity);
+
+        // Unit Cost
+        System.out.print("Entrez le coût unitaire de ce matériau (€/m²) : ");
+        double unitCost = scanner.nextDouble();
+        if (unitCost < 0) {
+            System.out.println("Le coût unitaire ne peut pas être négatif.");
+            return;
+        }
+        material.setUnitCost(unitCost);
+
+        // Transport Cost
+        System.out.print("Entrez le coût de transport de ce matériau (€) : ");
+        double transportCost = scanner.nextDouble();
+        if (transportCost < 0) {
+            System.out.println("Le coût de transport ne peut pas être négatif.");
+            return;
+        }
+        material.setTransportCost(transportCost);
+
+        // Quality Coefficient
+        System.out.print("Entrez le coefficient de qualité de ce matériau : ");
+        double qualityCoefficient = scanner.nextDouble();
+        if (qualityCoefficient < 0) {
+            System.out.println("Le coefficient de qualité ne peut pas être négatif.");
+            return;
+        }
+        material.setQualityCoefficient(qualityCoefficient); // Assuming you have this method
+
+        scanner.nextLine(); // Consume the newline character
+        material.setProject(project);
+
+        material = DependencyInjector.createInstance(MaterialService.class).addMaterial(material);
+        if (material != null) {
+            System.out.println("Matériau ajouté avec succès !");
+        } else {
+            System.out.println("Quelque chose s'est mal passé, veuillez réessayer.");
+        }
     }
 
     private static void createNewLabor(Project project) {
         Labor labor = new Labor();
         System.out.print("--- Ajout de la main-d'œuvre ---\n");
+
+        // Labor Type
         System.out.print("Entrez le type de main-d'œuvre (e.g., Ouvrier de base, Spécialiste) : ");
-        labor.setName(scanner.nextLine());
+        labor.setName(scanner.nextLine().trim());
+        if (labor.getName().isEmpty()) {
+            System.out.println("Le type de main-d'œuvre ne peut pas être vide.");
+            return;
+        }
 
+        // Hourly Rate
         System.out.print("Entrez le taux horaire de cette main-d'œuvre (€/h) : ");
-        labor.setHourlyRate(scanner.nextDouble());
+        double hourlyRate = scanner.nextDouble();
+        if (hourlyRate < 0) {
+            System.out.println("Le taux horaire ne peut pas être négatif.");
+            return;
+        }
+        labor.setHourlyRate(hourlyRate);
 
+        // Hours Worked
         System.out.print("Entrez le nombre d'heures travaillées : ");
-        labor.setHoursWorked(scanner.nextDouble());
+        double hoursWorked = scanner.nextDouble();
+        if (hoursWorked <= 0) {
+            System.out.println("Le nombre d'heures travaillées doit être supérieur à 0.");
+            return;
+        }
+        labor.setHoursWorked(hoursWorked);
 
+        // Productivity Factor
         System.out.print("Entrez le facteur de productivité (1.0 = standard, > 1.0 = haute productivité) : ");
-        labor.setWorkerProductivity(scanner.nextDouble());
+        double workerProductivity = scanner.nextDouble();
+        if (workerProductivity <= 0) {
+            System.out.println("Le facteur de productivité doit être supérieur à 0.");
+            return;
+        }
+        labor.setWorkerProductivity(workerProductivity);
 
         labor.setProject(project);
         labor = DependencyInjector.createInstance(LaborService.class).addLabor(labor);
-        if( labor != null) {
+        if (labor != null) {
             System.out.println("Main-d'œuvre créée avec succès !");
+        } else {
+            System.out.println("Quelque chose s'est mal passé lors de la création de la main-d'œuvre.");
         }
-        else System.out.println("something is wrong during labor creation");
     }
 
     private static void calculateProjectCost(){
@@ -318,9 +381,7 @@ public class Main {
     private static void addDevi(Project project) {
         Estimate estimate = new Estimate();
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-
-
+        estimate.setProject(project);
         while (estimate.getIssueDate() == null) {
             System.out.print("Entrez la date d'émission du devis (format : jj/mm/aaaa) : ");
             String inputDate = scanner.nextLine();
@@ -371,41 +432,83 @@ public class Main {
 
         ProjectService projectService = DependencyInjector.createInstance(ProjectService.class);
         Project project = projectService.getProject(projectId);
-        if(project == null){
+        if (project == null) {
             System.out.println("Le projet n'existe pas");
-            main(null);
+            return; // Exit instead of calling main(null)
         }
 
         System.out.print("Souhaitez-vous appliquer une TVA au projet ? (y/n) : ");
         String tvaResponse = scanner.next();
         double tva = (tvaResponse.equalsIgnoreCase("y")) ? getInputDouble("Entrez le taux de TVA : ") : 0;
 
-
         System.out.print("Souhaitez-vous appliquer une marge bénéficiaire au projet ? (y/n) : ");
         String mBResponse = scanner.next();
-        double mB = (mBResponse.equalsIgnoreCase("y")) ? getInputDouble("Entrez le taux de marge bénéficiaire : ") : 0;
+        double mB = 0;
+        if (mBResponse.equalsIgnoreCase("y")) {
+            mB = getInputDouble("Entrez le taux de marge bénéficiaire : ");
+            if (mB < 0) {
+                System.out.println("Le taux de marge bénéficiaire ne peut pas être négatif.");
+                return;
+            }
+        }
 
+        System.out.println("Marge bénéficiaire : " + mB);
         System.out.println("Calcul du coût en cours...");
         project = projectService.calculProjectCost(project, tva, mB);
         System.out.println("Coût total calculé : " + project.getTotalCost());
-        displayProjectDetails(project);
+        displayProjectDetails(project, tva);
     }
 
-    private static void displayProjectDetails(Project project) {
+    // Ensure this method correctly handles input and exceptions
+    private static double getInputDouble(String message) {
+        double value = -1;
+        while (value < 0) { // Adjust condition based on your needs
+            System.out.print(message);
+            try {
+                value = scanner.nextDouble();
+                if (value < 0) {
+                    System.out.println("Veuillez entrer une valeur positive.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Valeur invalide. Veuillez entrer un nombre.");
+                scanner.next(); // Clear the invalid input
+            }
+        }
+        scanner.nextLine(); // Consume the newline character
+        return value;
+    }
+
+
+    private static void displayProjectDetails(Project project ,double tva) {
+        // Display project basic information
         System.out.println("Nom du projet : " + project.getProjectName());
         System.out.println("Client : " + project.getClient().getName());
         System.out.println("Adresse du chantier : " + project.getClient().getAddress());
 
         System.out.println("--- Détail des Coûts ---");
 
+
+        double vatRate = tva;
+        double profitMargin = project.getProfitMargin();
+
+        if (vatRate <= 0) {
+            System.out.println("Erreur : le taux de TVA doit être supérieur à 0.");
+            return;
+        }
+        if (profitMargin <= 0) {
+            System.out.println("Erreur : la marge bénéficiaire doit être supérieure à 0.");
+            return;
+        }
+
+        // Calculate material costs
         double totalMaterialsCost = 0;
         double totalMaterialsCostWithTva = 0;
         System.out.println("1. Matériaux :");
         for (Material material : project.getMaterials()) {
             double materialCost = material.calculateCost();
             totalMaterialsCost += materialCost;
-            double materialCostWithTva = materialCost * (1 + material.getVatRate());
-            totalMaterialsCostWithTva += materialCostWithTva * (1 + material.getVatRate() );
+            double materialCostWithTva = materialCost * (1 + vatRate / 100);
+            totalMaterialsCostWithTva += materialCostWithTva;
 
             System.out.printf("- %s : %.2f € (quantité : %.2f %s, coût unitaire : %.2f €/m², qualité : %.2f, transport : %.2f €)%n",
                     material.getName(), materialCost, material.getQuantity(), material.getUnitCost(),
@@ -413,8 +516,9 @@ public class Main {
         }
         System.out.printf("**Coût total des matériaux avant TVA : %.2f €**%n", totalMaterialsCost);
         System.out.printf("**Coût total des matériaux avec TVA (%.0f%%) : %.2f €**%n",
-                project.getMaterials().get(0).getVatRate() * 100, totalMaterialsCostWithTva);
+                vatRate, totalMaterialsCostWithTva);
 
+        // Calculate labor costs
         double totalLaborCost = 0;
         System.out.println("2. Main-d'œuvre :");
         for (Labor labor : project.getLabors()) {
@@ -425,29 +529,21 @@ public class Main {
                     labor.getName(), laborCost, labor.getHourlyRate(), labor.getHoursWorked(),
                     labor.getWorkerProductivity());
         }
-        double laborCostWithVAT = totalLaborCost * 1.2; // 20% VAT
+        double laborCostWithVAT = totalLaborCost * (1 + 0.2);
         System.out.printf("**Coût total de la main-d'œuvre avant TVA : %.2f €**%n", totalLaborCost);
-        System.out.printf("**Coût total de la main-d'œuvre avec TVA (20%%) : %.2f €**%n", laborCostWithVAT);
+        System.out.printf("**Coût total de la main-d'œuvre avec TVA (%.2f%%) : %.2f €**%n",vatRate, laborCostWithVAT);
 
+        // Calculate total costs
         double totalCostBeforeMargin = totalMaterialsCost + totalLaborCost;
-        double margin = totalCostBeforeMargin * (1 + project.getProfitMargin());
+        double margin = totalCostBeforeMargin * profitMargin;
         double finalTotalCost = totalCostBeforeMargin + margin;
 
         System.out.printf("3. Coût total avant marge : %.2f €%n", totalCostBeforeMargin);
-        System.out.printf("4. Marge bénéficiaire (%.0f%%) : %.2f €%n", project.getProfitMargin() * 100, margin);
+        System.out.printf("4. Marge bénéficiaire (%.0f%%) : %.2f €%n", profitMargin , margin);
         System.out.printf("**Coût total final du projet : %.2f €**%n", finalTotalCost);
     }
 
-    private static double getInputDouble(String prompt) {
-        System.out.print(prompt);
-        while (scanner.hasNextDouble())
-            return scanner.nextDouble();
-        return 0;
-    }
 
-    public static double calculateCostPlusTva(Component component,double tva) {
-        return component.calculateCost() + component.calculateCost() * tva;
-    }
 
     private static int getUserChoice() {
         while (!scanner.hasNextInt()) {

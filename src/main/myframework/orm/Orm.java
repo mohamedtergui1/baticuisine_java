@@ -21,7 +21,7 @@ public abstract class Orm<T> {
         queryBuilder = new QueryBuilder<>(this.con,getEntityClass());
     }
 
-    static final Set<String> ALLOWED_TYPES = new HashSet<>(Arrays.asList("int","boolean" , "float", "java.lang.String", "char", "long", "double", "java.sql.Date"));
+    static final Set<String> ALLOWED_TYPES = new HashSet<>(Arrays.asList("int","boolean" , "float", "java.lang.String", "char", "long", "double", "java.sql.Date", "java.time.LocalDate" ));
 
     protected abstract Class<T> getEntityClass();
 
