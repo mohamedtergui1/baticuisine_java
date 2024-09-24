@@ -633,12 +633,12 @@ public abstract class Orm<T> {
                         sql.append(", ");
                         values.append(", ");
                     }
-
-                    if (ALLOWED_TYPES.contains(field.getType().getName())) {
-                        sql.append(field.getName());
-                    } else {
+                    else if(field.getType().isEnum()){
+                        field.getName();
+                    }else
                         sql.append(field.getName()).append("_id");
-                    }
+
+
                     values.append("?");
                     firstField = false;
                 }
