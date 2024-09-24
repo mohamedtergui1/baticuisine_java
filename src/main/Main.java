@@ -1,3 +1,5 @@
+package main;
+
 import main.java.com.app.entities.*;
 
 import main.java.com.app.enums.Status;
